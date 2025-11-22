@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Тест для менеджеров</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+    .question { margin-bottom: 20px; }
+    button { margin-top: 20px; padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Автоматизированная оценка профессионализма менеджера</h1>
+  <p>Ответьте на вопросы, чтобы определить ваш уровень.</p>
+
+  <form id="testForm">
+    <!-- Пример одного вопроса -->
+    <div class="question">
+      <p>1. Как вы решаете конфликт в команде?</p>
+      <label><input type="radio" name="q1" value="1"> Игнорирую — само пройдёт</label><br>
+      <label><input type="radio" name="q1" value="2"> Провожу встречу со всеми</label><br>
+      <label><input type="radio" name="q1" value="3"> Решаю индивидуально с каждым</label>
+    </div>
+
+    <!-- Добавим ещё пару вопросов позже -->
+
+    <button type="submit">Отправить результат</button>
+  </form>
+
+  <div id="result" style="display:none; margin-top: 20px; padding: 15px; background: #e6ffe6;"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
