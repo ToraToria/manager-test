@@ -49,6 +49,23 @@
   </style>
 </head>
 <body>
+
+
+<div id="welcome" class="container">
+  <h1>Оценка профессионализма менеджера</h1>
+  <p>Пожалуйста, укажите ваши данные:</p>
+  <form id="userForm">
+    <div style="margin-bottom: 15px;">
+      <label for="firstName">Имя:</label><br>
+      <input type="text" id="firstName" name="firstName" required style="width:100%; padding:8px; margin-top:5px;">
+    </div>
+    <div style="margin-bottom: 20px;">
+      <label for="lastName">Фамилия:</label><br>
+      <input type="text" id="lastName" name="lastName" required style="width:100%; padding:8px; margin-top:5px;">
+    </div>
+    <button type="submit">Начать тест</button>
+  </form>
+ </div>
   <div class="container">
     <h1>Автоматизированная оценка профессионализма менеджера</h1>
     <p>Ответьте на вопросы, чтобы определить ваш уровень.</p>
@@ -161,8 +178,7 @@
 
       <button type="submit">Отправить результат</button>
     </form>
-
-    <div id="result" style="display:none;"></div>
+    <div id="result" style="display:none; margin-top:20px; padding:15px; background:#d4edda;"></div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -170,4 +186,5 @@
   <script src="main.js"></script>
 </body>
 </html>
+
 
