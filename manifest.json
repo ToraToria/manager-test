@@ -1,7 +1,7 @@
 {
   "name": "Тест менеджера",
   "short_name": "ManagerTest",
-  "start_url": "/",
+  "start_url": "/manager-test/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007bff",
