@@ -10,39 +10,51 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+let userData = {};
+
+// Обработка формы имени
+document.getElementById('userForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const firstName = document.getElementById('firstName').value.trim();
+  const lastName = document.getElementById('lastName').value.trim();
+  
+  if (firstName && lastName) {
+    userData = { firstName, lastName };
+    document.getElementById('welcome').style.display = 'none';
+    document.getElementById('test').style.display = 'block';
+  }
+});
+
+// Обработка теста
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
-  // Собираем ответы
   const formData = new FormData(e.target);
   const answers = {};
   for (let [key, value] of formData.entries()) {
     answers[key] = value;
   }
 
-  // Пример простой оценки: сумма баллов
   let score = 0;
   for (let q in answers) {
     score += parseInt(answers[q]);
   }
 
-  // Определяем уровень
   let level = "Новичок";
-  if (score >= 7) level = "Опытный менеджер";
-  if (score >= 9) level = "Эксперт";
+  if (score >= 30) level = "Опытный менеджер";
+  if (score >= 40) level = "Профессионал высокого уровня";
 
-  // Сохраняем в Firebase
+  // Сохраняем ВСЁ: имя, фамилию, ответы, баллы, уровень
   await db.collection("results").add({
+    firstName: userData.firstName,
+    lastName: userData.lastName,
     answers: answers,
     score: score,
     level: level,
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  // Показываем результат
   document.getElementById('result').innerText = `Ваш уровень: ${level} (баллы: ${score})`;
   document.getElementById('result').style.display = 'block';
-
-  
   e.target.reset();
 });
