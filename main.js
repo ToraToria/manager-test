@@ -1,4 +1,3 @@
-// main.js
 const firebaseConfig = {
   apiKey: "AIzaSyAmTtXSLeksMmRuxlmt19qz60zESOCFGGY",
   authDomain: "manager-test-2b964.firebaseapp.com",
@@ -11,18 +10,46 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Показываем приветствие
+// Проверка имени
 const firstName = localStorage.getItem('firstName');
 const lastName = localStorage.getItem('lastName');
 
 if (firstName && lastName) {
-  document.getElementById('userGreeting').innerText = `Привет, ${firstName} ${lastName}! Пройдите тест ниже.`;
+  document.getElementById('userGreeting').innerText = `Привет, ${firstName} ${lastName}!`;
 } else {
-  // Если кто-то зашёл напрямую — перенаправляем на index.html
   window.location.href = 'index.html';
 }
 
-// Обработка отправки теста
+// === Логика поочерёдного показа вопросов ===
+const questions = document.querySelectorAll('.question');
+const totalQuestions = questions.length;
+let currentQuestionIndex = 0;
+
+// Показываем первый вопрос
+questions[currentQuestionIndex].classList.remove('hidden');
+
+// Обрабатываем выбор ответа в каждом вопросе
+questions.forEach((question, index) => {
+  const inputs = question.querySelectorAll('input[type="radio"]');
+  inputs.forEach(input => {
+    input.addEventListener('change', () => {
+      if (index === currentQuestionIndex) {
+        // Ждём немного для плавности
+        setTimeout(() => {
+          currentQuestionIndex++;
+          if (currentQuestionIndex < totalQuestions) {
+            questions[currentQuestionIndex].classList.remove('hidden');
+          } else {
+            // Все вопросы пройдены — показываем кнопку
+            document.getElementById('submitBtn').style.display = 'block';
+          }
+        }, 300);
+      }
+    });
+  });
+});
+
+// Отправка формы
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -41,7 +68,6 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
   if (score >= 30) level = "Опытный менеджер";
   if (score >= 40) level = "Профессионал высокого уровня";
 
-  // Сохраняем имя и фамилию
   await db.collection("results").add({
     firstName: firstName,
     lastName: lastName,
@@ -53,5 +79,5 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
 
   document.getElementById('result').innerText = `Ваш уровень: ${level} (баллы: ${score})`;
   document.getElementById('result').style.display = 'block';
-  e.target.reset();
+  document.getElementById('testForm').style.display = 'none';
 });
