@@ -49,7 +49,6 @@ questions.forEach((question, index) => {
   });
 });
 
-// Отправка формы
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -68,6 +67,7 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
   if (score >= 30) level = "Опытный менеджер";
   if (score >= 40) level = "Профессионал высокого уровня";
 
+  // Сохраняем результат
   await db.collection("results").add({
     firstName: firstName,
     lastName: lastName,
@@ -77,7 +77,12 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
 
+  // Перенаправляем на results.html
+  window.location.href = 'results.html';
+});
+
   document.getElementById('result').innerText = `Ваш уровень: ${level} (баллы: ${score})`;
   document.getElementById('result').style.display = 'block';
   document.getElementById('testForm').style.display = 'none';
 });
+
