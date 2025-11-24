@@ -1,16 +1,51 @@
+<!-- results.html -->
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Результаты тестов</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+    .result-item {
+      padding: 12px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .result-item:last-child {
+      border-bottom: none;
+    }
+    strong {
+      color: #007bff;
+    }
+  </style>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
-  <h2>Все результаты тестов</h2>
-  <div id="list"></div>
+  <div class="container">
+    <h2>Результаты прохождения теста</h2>
+    <div id="list">Загрузка...</div>
+  </div>
 
   <script>
+    // 🔑 Твой конфиг Firebase (копируем из main.js)
     const firebaseConfig = {
       apiKey: "AIzaSyAmTtXSLeksMmRuxlmt19qz60zESOCFGGY",
       authDomain: "manager-test-2b964.firebaseapp.com",
@@ -23,19 +58,40 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // Загружаем результаты
     db.collection("results")
       .orderBy("timestamp", "desc")
       .get()
       .then(snapshot => {
         const list = document.getElementById('list');
+        if (snapshot.empty) {
+          list.innerHTML = "<p>Нет сохранённых результатов.</p>";
+          return;
+        }
+
+        let html = '';
         snapshot.forEach(doc => {
           const data = doc.data();
-          const div = document.createElement('div');
-          div.innerHTML = `<p><strong>${data.firstName} ${data.lastName}</strong> — ${data.level} | Баллы: ${data.score} | ${new Date(data.timestamp.toDate()).toLocaleString()}</p><hr>`;
-          list.appendChild(div);
+          const name = data.firstName && data.lastName 
+            ? `${data.firstName} ${data.lastName}`
+            : "Аноним";
+          const date = data.timestamp 
+            ? new Date(data.timestamp.toDate()).toLocaleString('ru-RU')
+            : 'Неизвестно';
+
+          html += `
+            <div class="result-item">
+              <p><strong>${name}</strong> — ${data.level} (баллы: ${data.score})</p>
+              <p><small>Дата: ${date}</small></p>
+            </div>
+          `;
         });
+        list.innerHTML = html;
+      })
+      .catch(err => {
+        console.error("Ошибка загрузки:", err);
+        document.getElementById('list').innerHTML = "<p>Ошибка при загрузке данных.</p>";
       });
   </script>
 </body>
-
 </html>
