@@ -1,3 +1,4 @@
+// main.js
 const firebaseConfig = {
   apiKey: "AIzaSyAmTtXSLeksMmRuxlmt19qz60zESOCFGGY",
   authDomain: "manager-test-2b964.firebaseapp.com",
@@ -10,22 +11,18 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-let userData = {};
+// Показываем приветствие
+const firstName = localStorage.getItem('firstName');
+const lastName = localStorage.getItem('lastName');
 
-// Обработка формы имени
-document.getElementById('userForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const firstName = document.getElementById('firstName').value.trim();
-  const lastName = document.getElementById('lastName').value.trim();
-  
-  if (firstName && lastName) {
-    userData = { firstName, lastName };
-    document.getElementById('welcome').style.display = 'none';
-    document.getElementById('test').style.display = 'block';
-  }
-});
+if (firstName && lastName) {
+  document.getElementById('userGreeting').innerText = `Привет, ${firstName} ${lastName}! Пройдите тест ниже.`;
+} else {
+  // Если кто-то зашёл напрямую — перенаправляем на index.html
+  window.location.href = 'index.html';
+}
 
-// Обработка теста
+// Обработка отправки теста
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -44,10 +41,10 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
   if (score >= 30) level = "Опытный менеджер";
   if (score >= 40) level = "Профессионал высокого уровня";
 
-  // Сохраняем ВСЁ: имя, фамилию, ответы, баллы, уровень
+  // Сохраняем имя и фамилию
   await db.collection("results").add({
-    firstName: userData.firstName,
-    lastName: userData.lastName,
+    firstName: firstName,
+    lastName: lastName,
     answers: answers,
     score: score,
     level: level,
