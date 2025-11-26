@@ -1,4 +1,4 @@
-// main.js - УДАЛЕНА ИНИЦИАЛИЗАЦИЯ FIREBASE
+// main.js - ТОЛЬКО ЭТОТ КОД
 
 const db = firebase.firestore();
 
@@ -36,7 +36,11 @@ questions.forEach((question, index) => {
           if (currentQuestionIndex < totalQuestions) {
             questions[currentQuestionIndex].classList.remove('hidden');
           } else {
-            document.getElementById('submitBtn').style.display = 'block';
+            // Убрали ссылку на submitBtn так как его нет в HTML
+            const submitBtn = document.querySelector('button[type="submit"]');
+            if (submitBtn) {
+              submitBtn.style.display = 'block';
+            }
           }
         }, 300);
       }
@@ -44,7 +48,7 @@ questions.forEach((question, index) => {
   });
 });
 
-// Отправка формы - ИСПРАВЛЕННАЯ ВЕРСИЯ
+// Отправка формы
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   
@@ -70,7 +74,7 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
     if (score >= 30) level = "Опытный менеджер";
     if (score >= 40) level = "Профессионал высокого уровня";
 
-    // Отправка в Firestore с обработкой ошибок
+    // Отправка в Firestore
     console.log('Пытаемся отправить данные в Firebase...');
     
     const result = await db.collection("results").add({
