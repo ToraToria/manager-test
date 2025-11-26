@@ -26,21 +26,21 @@ const totalQuestions = questions.length;
 let currentQuestionIndex = 0;
 
 // Показываем первый вопрос
-questions[currentQuestionIndex].classList.remove('hidden');
+if (questions.length > 0) {
+  questions[currentQuestionIndex].classList.remove('hidden');
+}
 
-// Обрабатываем выбор ответа в каждом вопросе
+// Обрабатываем выбор ответа
 questions.forEach((question, index) => {
   const inputs = question.querySelectorAll('input[type="radio"]');
   inputs.forEach(input => {
     input.addEventListener('change', () => {
       if (index === currentQuestionIndex) {
-        // Ждём немного для плавности
         setTimeout(() => {
           currentQuestionIndex++;
           if (currentQuestionIndex < totalQuestions) {
             questions[currentQuestionIndex].classList.remove('hidden');
           } else {
-            // Все вопросы пройдены — показываем кнопку
             document.getElementById('submitBtn').style.display = 'block';
           }
         }, 300);
@@ -49,6 +49,7 @@ questions.forEach((question, index) => {
   });
 });
 
+// Отправка формы
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -67,7 +68,6 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
   if (score >= 30) level = "Опытный менеджер";
   if (score >= 40) level = "Профессионал высокого уровня";
 
-  // Сохраняем результат
   await db.collection("results").add({
     firstName: firstName,
     lastName: lastName,
@@ -77,12 +77,6 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
     timestamp: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  // Перенаправляем на results.html
+  // Переход на страницу результатов
   window.location.href = 'results.html';
 });
-
-  document.getElementById('result').innerText = `Ваш уровень: ${level} (баллы: ${score})`;
-  document.getElementById('result').style.display = 'block';
-  document.getElementById('testForm').style.display = 'none';
-});
-
