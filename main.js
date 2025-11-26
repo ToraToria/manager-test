@@ -1,14 +1,5 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyAmTtXSLeksMmRuxlmt19qz60zESOCFGGY",
-  authDomain: "manager-test-2b964.firebaseapp.com",
-  projectId: "manager-test-2b964",
-  storageBucket: "manager-test-2b964.firebasestorage.app",
-  messagingSenderId: "769825814408",
-  appId: "1:769825814408:web:072ec41246a2d1027b6c3d"
-};
+// main.js - УДАЛЕНА ИНИЦИАЛИЗАЦИЯ FIREBASE
 
-// Инициализация Firebase
-firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // Проверка имени
@@ -16,7 +7,6 @@ const firstName = localStorage.getItem('firstName');
 const lastName = localStorage.getItem('lastName');
 
 if (firstName && lastName) {
-  // Добавляем приветствие если есть элемент с таким id
   const greetingElement = document.getElementById('userGreeting');
   if (greetingElement) {
     greetingElement.innerText = `Привет, ${firstName} ${lastName}!`;
