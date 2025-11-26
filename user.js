@@ -8,10 +8,8 @@ function startTest() {
     return;
   }
 
-  // Сохраняем в localStorage — это безопасно и просто
   localStorage.setItem('firstName', firstName);
   localStorage.setItem('lastName', lastName);
 
-  // Переходим на тест
   window.location.href = 'test.html';
 }
