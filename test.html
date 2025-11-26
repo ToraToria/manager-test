@@ -122,23 +122,25 @@
     </form>
     <div id="result" style="display:none;"></div>
   </div>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAmTtXSLeksMmRuxlmt19qz60zESOCFGGY",
-    authDomain: "manager-test-2b964.firebaseapp.com",
-    projectId: "manager-test-2b964",
-    storageBucket: "manager-test-2b964.firebasestorage.app",
-    messagingSenderId: "769825814408",
-    appId: "1:769825814408:web:072ec41246a2d1027b6c3d"
-  };
+
+  <!-- ПРАВИЛЬНЫЙ ПОРЯДОК ПОДКЛЮЧЕНИЯ СКРИПТОВ -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   
-  firebase.initializeApp(firebaseConfig);
-</script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="main.js"></script>
+  <script>
+    // Инициализация Firebase в test.html
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmTtXSLeksMmRuxlmt19qz60zESOCFGGY",
+      authDomain: "manager-test-2b964.firebaseapp.com",
+      projectId: "manager-test-2b964",
+      storageBucket: "manager-test-2b964.firebasestorage.app",
+      messagingSenderId: "769825814408",
+      appId: "1:769825814408:web:072ec41246a2d1027b6c3d"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+  </script>
+  
+  <script src="main.js"></script>
 </body>
 </html>
-
-
-
