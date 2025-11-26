@@ -1,5 +1,4 @@
-// main.js - ТОЛЬКО ЭТОТ КОД
-
+// main.js
 const db = firebase.firestore();
 
 // Проверка имени
@@ -30,14 +29,12 @@ questions.forEach((question, index) => {
     input.addEventListener('change', () => {
       if (index === currentQuestionIndex) {
         setTimeout(() => {
-          // Скрываем текущий вопрос
           questions[currentQuestionIndex].classList.remove('active');
           setTimeout(() => {
             questions[currentQuestionIndex].classList.add('hidden');
             
             currentQuestionIndex++;
             if (currentQuestionIndex < totalQuestions) {
-              // Показываем следующий вопрос с анимацией
               questions[currentQuestionIndex].classList.remove('hidden');
               setTimeout(() => {
                 questions[currentQuestionIndex].classList.add('active');
@@ -54,7 +51,6 @@ questions.forEach((question, index) => {
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   
-  // Показываем loading state
   const submitBtn = this.querySelector('button[type="submit"]');
   const originalText = submitBtn.textContent;
   submitBtn.textContent = 'Отправка...';
@@ -76,7 +72,6 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
     if (score >= 30) level = "Опытный менеджер";
     if (score >= 40) level = "Профессионал высокого уровня";
 
-    // Отправка в Firestore
     console.log('Пытаемся отправить данные в Firebase...');
     
     const result = await db.collection("results").add({
@@ -90,14 +85,12 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
 
     console.log('Данные успешно отправлены! ID документа:', result.id);
     
-    // Переход на страницу результатов
     window.location.href = 'results.html';
     
   } catch (error) {
     console.error('Ошибка при отправке в Firebase:', error);
     alert('Ошибка при отправке данных. Проверьте консоль для подробностей.');
     
-    // Восстанавливаем кнопку
     submitBtn.textContent = originalText;
     submitBtn.disabled = false;
   }
