@@ -1,13 +1,13 @@
 /* styles.css - ТЁМНО-СЕРЫЙ СТИЛЬ ПРОГРАММИСТА */
 :root {
-  --bg-primary: #1a1a1a;          /* Тёмно-серый фон */
-  --bg-card: #2d2d2d;             /* Серый для карточек */
-  --text-primary: #00ff00;        /* Зелёный текст как в терминале */
-  --text-secondary: #cccccc;      /* Светло-серый второстепенный текст */
-  --accent: #00cc00;              /* Акцентный зелёный */
-  --success: #00ff00;             /* Успех - ярко-зелёный */
-  --border: #404040;              /* Границы */
-  --glow: 0 0 10px #00ff00;      /* Свечение для акцентов */
+  --bg-primary: #1a1a1a;
+  --bg-card: #2d2d2d;
+  --text-primary: #00ff00;
+  --text-secondary: #cccccc;
+  --accent: #00cc00;
+  --success: #00ff00;
+  --border: #404040;
+  --glow: 0 0 10px #00ff00;
 }
 
 * {
@@ -38,7 +38,6 @@ body {
   overflow: hidden;
 }
 
-/* Эффект сканирующей линии */
 .container::before {
   content: '';
   position: absolute;
@@ -123,7 +122,6 @@ button:active {
   transform: translateY(0);
 }
 
-/* Стили для вопросов с анимацией появления */
 .question {
   margin-bottom: 30px;
   padding: 20px;
@@ -173,7 +171,6 @@ input[type="radio"] {
   accent-color: var(--accent);
 }
 
-/* Стили для results.html */
 .result-item {
   padding: 16px 0;
   border-bottom: 1px solid var(--border);
@@ -201,31 +198,76 @@ small {
   margin-top: 5px;
 }
 
-/* Анимация печатающего текста */
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
+/* Мобильные стили */
+@media (max-width: 768px) {
+  body {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .container {
+    padding: 20px 15px;
+    margin: 0;
+    border-radius: 0;
+    min-height: 100vh;
+  }
+  
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+  }
+  
+  h2 {
+    font-size: 1.3rem;
+  }
+  
+  .question {
+    padding: 12px;
+    margin-bottom: 15px;
+  }
+  
+  .question p {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  label {
+    padding: 8px;
+    margin: 3px 0;
+    font-size: 13px;
+  }
+  
+  input[type="text"] {
+    padding: 10px;
+    font-size: 16px;
+  }
+  
+  button {
+    padding: 16px;
+    font-size: 16px;
+    margin-top: 25px;
+  }
+  
+  input[type="radio"] {
+    transform: scale(1.2);
+    margin-right: 12px;
+  }
 }
 
-@keyframes blink {
-  0%, 100% { border-color: transparent }
-  50% { border-color: var(--accent) }
+@media (max-width: 480px) {
+  body {
+    padding: 5px;
+  }
+  
+  .container {
+    padding: 15px 10px;
+  }
+  
+  h1 {
+    font-size: 1.2rem;
+  }
+  
+  .question {
+    padding: 10px;
+  }
 }
-
-/* Индикатор загрузки */
-.loading {
-  border: 2px solid var(--border);
-  border-top: 2px solid var(--accent);
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  margin-right: 10px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
