@@ -15,33 +15,37 @@ if (firstName && lastName) {
   window.location.href = 'index.html';
 }
 
-// === Логика поочерёдного показа вопросов ===
+
 const questions = document.querySelectorAll('.question');
 const totalQuestions = questions.length;
 let currentQuestionIndex = 0;
 
-// Показываем первый вопрос
 if (questions.length > 0) {
   questions[currentQuestionIndex].classList.remove('hidden');
+  questions[currentQuestionIndex].classList.add('active');
 }
 
-// Обрабатываем выбор ответа
+
 questions.forEach((question, index) => {
   const inputs = question.querySelectorAll('input[type="radio"]');
   inputs.forEach(input => {
     input.addEventListener('change', () => {
       if (index === currentQuestionIndex) {
         setTimeout(() => {
-          currentQuestionIndex++;
-          if (currentQuestionIndex < totalQuestions) {
-            questions[currentQuestionIndex].classList.remove('hidden');
-          } else {
-            // Убрали ссылку на submitBtn так как его нет в HTML
-            const submitBtn = document.querySelector('button[type="submit"]');
-            if (submitBtn) {
-              submitBtn.style.display = 'block';
+        
+          questions[currentQuestionIndex].classList.remove('active');
+          setTimeout(() => {
+            questions[currentQuestionIndex].classList.add('hidden');
+            
+            currentQuestionIndex++;
+            if (currentQuestionIndex < totalQuestions) {
+              // Показываем следующий вопрос с анимацией
+              questions[currentQuestionIndex].classList.remove('hidden');
+              setTimeout(() => {
+                questions[currentQuestionIndex].classList.add('active');
+              }, 50);
             }
-          }
+          }, 300);
         }, 300);
       }
     });
@@ -100,3 +104,4 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
     submitBtn.disabled = false;
   }
 });
+
