@@ -15,7 +15,6 @@ if (firstName && lastName) {
   window.location.href = 'index.html';
 }
 
-
 const questions = document.querySelectorAll('.question');
 const totalQuestions = questions.length;
 let currentQuestionIndex = 0;
@@ -25,14 +24,13 @@ if (questions.length > 0) {
   questions[currentQuestionIndex].classList.add('active');
 }
 
-
 questions.forEach((question, index) => {
   const inputs = question.querySelectorAll('input[type="radio"]');
   inputs.forEach(input => {
     input.addEventListener('change', () => {
       if (index === currentQuestionIndex) {
         setTimeout(() => {
-        
+          // Скрываем текущий вопрос
           questions[currentQuestionIndex].classList.remove('active');
           setTimeout(() => {
             questions[currentQuestionIndex].classList.add('hidden');
@@ -104,4 +102,3 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
     submitBtn.disabled = false;
   }
 });
-
