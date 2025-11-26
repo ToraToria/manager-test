@@ -6,8 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Результаты тестов</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <div class="container">
@@ -15,8 +13,12 @@
     <div id="list">Загрузка...</div>
   </div>
 
+  <!-- ПРАВИЛЬНЫЙ ПОРЯДОК -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  
   <script>
-    // 🔑 Твой конфиг Firebase (копируем из main.js)
+    // 🔑 Конфиг Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAmTtXSLeksMmRuxlmt19qz60zESOCFGGY",
       authDomain: "manager-test-2b964.firebaseapp.com",
@@ -66,4 +68,3 @@
   </script>
 </body>
 </html>
-
