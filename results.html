@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Результаты тестов</title>
-  <link rel="stylesheet" href="styles.css?v=1.6">
+  <link rel="stylesheet" href="styles.css?v=1.7">
 </head>
 <body>
   <div class="container">
@@ -17,19 +17,15 @@
     <div class="chart-container">
       <h3>Распределение уровней менеджеров</h3>
       
-      <!-- Контейнер для круговой диаграммы -->
       <div class="pie-chart-container">
         <div class="pie-chart" id="pieChart">
-          <div class="pie-segment" id="segment1"></div>
-          <div class="pie-segment" id="segment2"></div>
-          <div class="pie-segment" id="segment3"></div>
           <div class="pie-center">
             <span id="totalCount">0</span>
             <small>всего</small>
           </div>
         </div>
         
-        <div class="chart-legend">
+        <div class="chart-legend" id="chartLegend">
           <div class="legend-item">
             <span class="legend-color" style="background-color: #ff6384"></span>
             <span class="legend-label">Новичок: <span id="count1">0</span> (<span id="percent1">0%</span>)</span>
@@ -44,8 +40,6 @@
           </div>
         </div>
       </div>
-      
-      <div id="chartStats" class="chart-stats"></div>
     </div>
     
     <!-- Список результатов -->
@@ -76,7 +70,7 @@
       "Профессионал высокого уровня": 0
     };
 
-    // Загружаем результаты и строим диаграмму
+    // Загружаем результаты
     db.collection("results")
       .orderBy("timestamp", "desc")
       .get()
@@ -124,9 +118,8 @@
         document.getElementById('list').innerHTML = "<p>Ошибка при загрузке данных.</p>";
       });
 
-    // Функция обновления круговой диаграммы
+    // Функция обновления диаграммы
     function updateChart(levelCounts, total) {
-      const labels = ["Новичок", "Опытный менеджер", "Профессионал высокого уровня"];
       const counts = [
         levelCounts["Новичок"] || 0,
         levelCounts["Опытный менеджер"] || 0,
@@ -136,9 +129,8 @@
       // Обновляем общее количество
       document.getElementById('totalCount').textContent = total;
       
-      // Если нет данных, скрываем диаграмму
+      // Если нет данных
       if (total === 0) {
-        document.getElementById('pieChart').style.display = 'none';
         return;
       }
       
@@ -155,31 +147,18 @@
       document.getElementById('count3').textContent = counts[2];
       document.getElementById('percent3').textContent = percents[2].toFixed(1) + '%';
       
-      // Строим круговую диаграмму
-      let cumulativePercent = 0;
-      
-      // Сегмент 1: Новичок (красный)
-      const segment1 = document.getElementById('segment1');
+      // Создаём круговую диаграмму через CSS gradient
+      const pieChart = document.getElementById('pieChart');
       const percent1 = percents[0];
-      segment1.style.setProperty('--percentage', percent1);
-      segment1.style.setProperty('--color', '#ff6384');
-      segment1.style.setProperty('--start', cumulativePercent);
-      cumulativePercent += percent1;
-      
-      // Сегмент 2: Опытный менеджер (синий)
-      const segment2 = document.getElementById('segment2');
       const percent2 = percents[1];
-      segment2.style.setProperty('--percentage', percent2);
-      segment2.style.setProperty('--color', '#36a2eb');
-      segment2.style.setProperty('--start', cumulativePercent);
-      cumulativePercent += percent2;
-      
-      // Сегмент 3: Профессионал высокого уровня (зелёный)
-      const segment3 = document.getElementById('segment3');
       const percent3 = percents[2];
-      segment3.style.setProperty('--percentage', percent3);
-      segment3.style.setProperty('--color', '#00ff00');
-      segment3.style.setProperty('--start', cumulativePercent);
+      
+      // Устанавливаем градиент для круговой диаграммы
+      pieChart.style.background = `conic-gradient(
+        #ff6384 0% ${percent1}%,
+        #36a2eb ${percent1}% ${percent1 + percent2}%,
+        #00ff00 ${percent1 + percent2}% 100%
+      )`;
     }
   </script>
 </body>
