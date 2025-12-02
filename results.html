@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Результаты тестов</title>
-  <link rel="stylesheet" href="styles.css?v=1.5">
+  <link rel="stylesheet" href="styles.css?v=1.6">
 </head>
 <body>
   <div class="container">
@@ -16,7 +16,35 @@
     <!-- Диаграмма -->
     <div class="chart-container">
       <h3>Распределение уровней менеджеров</h3>
-      <canvas id="levelChart"></canvas>
+      
+      <!-- Контейнер для круговой диаграммы -->
+      <div class="pie-chart-container">
+        <div class="pie-chart" id="pieChart">
+          <div class="pie-segment" id="segment1"></div>
+          <div class="pie-segment" id="segment2"></div>
+          <div class="pie-segment" id="segment3"></div>
+          <div class="pie-center">
+            <span id="totalCount">0</span>
+            <small>всего</small>
+          </div>
+        </div>
+        
+        <div class="chart-legend">
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #ff6384"></span>
+            <span class="legend-label">Новичок: <span id="count1">0</span> (<span id="percent1">0%</span>)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #36a2eb"></span>
+            <span class="legend-label">Опытный менеджер: <span id="count2">0</span> (<span id="percent2">0%</span>)</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color" style="background-color: #00ff00"></span>
+            <span class="legend-label">Профессионал высокого уровня: <span id="count3">0</span> (<span id="percent3">0%</span>)</span>
+          </div>
+        </div>
+      </div>
+      
       <div id="chartStats" class="chart-stats"></div>
     </div>
     
@@ -27,9 +55,6 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  
-  <!-- Загрузка Chart.js из другого CDN -->
-  <script src="https://unpkg.com/chart.js@3.9.1/dist/chart.min.js"></script>
   
   <script>
     const firebaseConfig = {
@@ -90,8 +115,8 @@
         
         list.innerHTML = html;
         
-        // Строим диаграмму
-        createChart(levelCounts, totalResults);
+        // Обновляем диаграмму
+        updateChart(levelCounts, totalResults);
         
       })
       .catch(err => {
@@ -99,107 +124,62 @@
         document.getElementById('list').innerHTML = "<p>Ошибка при загрузке данных.</p>";
       });
 
-    // Функция создания круговой диаграммы
-    function createChart(levelCounts, total) {
-      const ctx = document.getElementById('levelChart').getContext('2d');
-      
-      // Данные для диаграммы
-      const labels = Object.keys(levelCounts);
-      const data = Object.values(levelCounts);
-      const percentages = data.map(count => total > 0 ? ((count / total) * 100).toFixed(1) : 0);
-      
-      // Цвета для диаграммы в стиле программиста
-      const colors = [
-        'rgba(255, 99, 132, 0.8)',    // Красный для новичков
-        'rgba(54, 162, 235, 0.8)',    // Синий для опытных
-        'rgba(0, 255, 0, 0.8)'        // Зелёный для профессионалов
+    // Функция обновления круговой диаграммы
+    function updateChart(levelCounts, total) {
+      const labels = ["Новичок", "Опытный менеджер", "Профессионал высокого уровня"];
+      const counts = [
+        levelCounts["Новичок"] || 0,
+        levelCounts["Опытный менеджер"] || 0,
+        levelCounts["Профессионал высокого уровня"] || 0
       ];
       
-      const borderColors = [
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(0, 255, 0, 1)'
-      ];
+      // Обновляем общее количество
+      document.getElementById('totalCount').textContent = total;
       
-      // Проверяем доступен ли Chart
-      if (typeof Chart === 'undefined') {
-        console.error('Chart.js не загрузился');
-        document.getElementById('levelChart').innerHTML = '<p>Диаграмма недоступна</p>';
+      // Если нет данных, скрываем диаграмму
+      if (total === 0) {
+        document.getElementById('pieChart').style.display = 'none';
         return;
       }
       
-      const chart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: labels.map((label, i) => `${label} (${percentages[i]}%)`),
-          datasets: [{
-            data: data,
-            backgroundColor: colors,
-            borderColor: borderColors,
-            borderWidth: 2,
-            hoverOffset: 15
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#cccccc',
-                font: {
-                  family: "'Courier New', monospace",
-                  size: 12
-                },
-                padding: 20
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  const label = context.label || '';
-                  const value = context.raw || 0;
-                  const percentage = percentages[context.dataIndex];
-                  return `${label.split(' (')[0]}: ${value} человек (${percentage}%)`;
-                }
-              },
-              backgroundColor: 'rgba(45, 45, 45, 0.9)',
-              titleColor: '#00ff00',
-              bodyColor: '#cccccc',
-              borderColor: '#00cc00',
-              borderWidth: 1
-            }
-          }
-        }
-      });
+      // Рассчитываем проценты
+      const percents = counts.map(count => (count / total) * 100);
       
-      // Показываем статистику под диаграммой
-      const statsElement = document.getElementById('chartStats');
-      let statsHTML = '<div class="stats-grid">';
+      // Обновляем легенду
+      document.getElementById('count1').textContent = counts[0];
+      document.getElementById('percent1').textContent = percents[0].toFixed(1) + '%';
       
-      labels.forEach((label, i) => {
-        const count = data[i];
-        const percent = percentages[i];
-        const color = colors[i];
-        
-        statsHTML += `
-          <div class="stat-item">
-            <span class="stat-color" style="background-color: ${color}"></span>
-            <span class="stat-label">${label}:</span>
-            <span class="stat-value">${count} (${percent}%)</span>
-          </div>
-        `;
-      });
+      document.getElementById('count2').textContent = counts[1];
+      document.getElementById('percent2').textContent = percents[1].toFixed(1) + '%';
       
-      statsHTML += `
-        <div class="stat-total">
-          <span class="stat-label">Всего результатов:</span>
-          <span class="stat-value">${total}</span>
-        </div>
-      </div>`;
+      document.getElementById('count3').textContent = counts[2];
+      document.getElementById('percent3').textContent = percents[2].toFixed(1) + '%';
       
-      statsElement.innerHTML = statsHTML;
+      // Строим круговую диаграмму
+      let cumulativePercent = 0;
+      
+      // Сегмент 1: Новичок (красный)
+      const segment1 = document.getElementById('segment1');
+      const percent1 = percents[0];
+      segment1.style.setProperty('--percentage', percent1);
+      segment1.style.setProperty('--color', '#ff6384');
+      segment1.style.setProperty('--start', cumulativePercent);
+      cumulativePercent += percent1;
+      
+      // Сегмент 2: Опытный менеджер (синий)
+      const segment2 = document.getElementById('segment2');
+      const percent2 = percents[1];
+      segment2.style.setProperty('--percentage', percent2);
+      segment2.style.setProperty('--color', '#36a2eb');
+      segment2.style.setProperty('--start', cumulativePercent);
+      cumulativePercent += percent2;
+      
+      // Сегмент 3: Профессионал высокого уровня (зелёный)
+      const segment3 = document.getElementById('segment3');
+      const percent3 = percents[2];
+      segment3.style.setProperty('--percentage', percent3);
+      segment3.style.setProperty('--color', '#00ff00');
+      segment3.style.setProperty('--start', cumulativePercent);
     }
   </script>
 </body>
