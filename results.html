@@ -7,9 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Результаты тестов</title>
-  <link rel="stylesheet" href="styles.css?v=1.4">
-  <!-- Подключаем Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css?v=1.5">
 </head>
 <body>
   <div class="container">
@@ -29,6 +27,9 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  
+  <!-- Загрузка Chart.js из другого CDN -->
+  <script src="https://unpkg.com/chart.js@3.9.1/dist/chart.min.js"></script>
   
   <script>
     const firebaseConfig = {
@@ -120,6 +121,13 @@
         'rgba(0, 255, 0, 1)'
       ];
       
+      // Проверяем доступен ли Chart
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js не загрузился');
+        document.getElementById('levelChart').innerHTML = '<p>Диаграмма недоступна</p>';
+        return;
+      }
+      
       const chart = new Chart(ctx, {
         type: 'pie',
         data: {
@@ -196,4 +204,3 @@
   </script>
 </body>
 </html>
-
