@@ -1,4 +1,4 @@
-/* styles.css - ТЁМНО-СЕРЫЙ СТИЛЬ ПРОГРАММИСТА */
+/* styles.css - ТЁМНО-СЕРЫЙ СТИЛЬ ПРОГРАММИСТА С ДИАГРАММОЙ */
 :root {
   --bg-primary: #1a1a1a;
   --bg-card: #2d2d2d;
@@ -27,7 +27,7 @@ body {
 }
 
 .container {
-  max-width: 700px;
+  max-width: 800px;
   margin: 0 auto;
   background: var(--bg-card);
   padding: 30px;
@@ -55,13 +55,24 @@ body {
   100% { top: 0; }
 }
 
-h1, h2 {
+h1, h2, h3 {
   text-align: center;
   margin-top: 0;
   color: var(--text-primary);
   text-shadow: var(--glow);
   font-weight: normal;
   letter-spacing: 1px;
+}
+
+h2 {
+  margin-bottom: 30px;
+  font-size: 1.8rem;
+}
+
+h3 {
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: var(--accent);
 }
 
 p, label {
@@ -198,6 +209,90 @@ small {
   margin-top: 5px;
 }
 
+/* Стили для диаграммы */
+.chart-container {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.chart-container h3 {
+  color: var(--text-primary);
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+#levelChart {
+  max-height: 300px;
+  margin: 0 auto;
+}
+
+/* Статистика под диаграммой */
+.chart-stats {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.stat-item:last-child {
+  border-bottom: none;
+}
+
+.stat-color {
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-right: 10px;
+  border: 1px solid var(--border);
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+.stat-value {
+  color: var(--text-primary);
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.stat-total {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  margin-top: 10px;
+  border-top: 2px solid var(--accent);
+}
+
+.stat-total .stat-label {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.stat-total .stat-value {
+  color: var(--accent);
+  font-size: 18px;
+}
+
 /* Мобильные стили */
 @media (max-width: 768px) {
   body {
@@ -219,6 +314,10 @@ small {
   
   h2 {
     font-size: 1.3rem;
+  }
+  
+  h3 {
+    font-size: 1.1rem;
   }
   
   .question {
@@ -252,6 +351,23 @@ small {
     transform: scale(1.2);
     margin-right: 12px;
   }
+  
+  /* Адаптивность для диаграммы */
+  .chart-container {
+    padding: 15px;
+  }
+  
+  #levelChart {
+    max-height: 250px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-item {
+    flex-wrap: wrap;
+  }
 }
 
 @media (max-width: 480px) {
@@ -269,5 +385,13 @@ small {
   
   .question {
     padding: 10px;
+  }
+  
+  .chart-container h3 {
+    font-size: 1rem;
+  }
+  
+  .stat-item {
+    font-size: 12px;
   }
 }
