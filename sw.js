@@ -1,5 +1,5 @@
 // sw.js - Service Worker
-const CACHE_NAME = 'manager-test-v1.4';
+const CACHE_NAME = 'manager-test-v1.5';
 const urlsToCache = [
   '/manager-test/',
   '/manager-test/index.html',
