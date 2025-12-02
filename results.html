@@ -7,44 +7,29 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Результаты тестов</title>
-  <link rel="stylesheet" href="styles.css?v=1.7">
+  <link rel="stylesheet" href="styles.css?v=1.5">
 </head>
 <body>
   <div class="container">
     <h2>Результаты прохождения теста</h2>
     
-    <!-- Диаграмма -->
+    <!-- CSS Диаграмма -->
     <div class="chart-container">
       <h3>Распределение уровней менеджеров</h3>
-      
-      <div class="pie-chart-container">
-        <div class="pie-chart" id="pieChart">
-          <div class="pie-center">
-            <span id="totalCount">0</span>
-            <small>всего</small>
-          </div>
+      <div class="css-chart">
+        <div class="chart-pie" id="chartPie">
+          <!-- Сегменты диаграммы будут вставлены через JS -->
         </div>
-        
-        <div class="chart-legend" id="chartLegend">
-          <div class="legend-item">
-            <span class="legend-color" style="background-color: #ff6384"></span>
-            <span class="legend-label">Новичок: <span id="count1">0</span> (<span id="percent1">0%</span>)</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-color" style="background-color: #36a2eb"></span>
-            <span class="legend-label">Опытный менеджер: <span id="count2">0</span> (<span id="percent2">0%</span>)</span>
-          </div>
-          <div class="legend-item">
-            <span class="legend-color" style="background-color: #00ff00"></span>
-            <span class="legend-label">Профессионал высокого уровня: <span id="count3">0</span> (<span id="percent3">0%</span>)</span>
-          </div>
-        </div>
+        <div class="chart-legend" id="chartLegend"></div>
       </div>
+      <div id="chartStats" class="chart-stats"></div>
     </div>
     
     <!-- Список результатов -->
     <h3>Детальные результаты</h3>
     <div id="list">Загрузка...</div>
+    
+    <button onclick="window.location.href='index.html'" style="margin-top: 30px;">Вернуться к началу</button>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -70,7 +55,7 @@
       "Профессионал высокого уровня": 0
     };
 
-    // Загружаем результаты
+    // Загружаем результаты и строим диаграмму
     db.collection("results")
       .orderBy("timestamp", "desc")
       .get()
@@ -78,6 +63,7 @@
         const list = document.getElementById('list');
         if (snapshot.empty) {
           list.innerHTML = "<p>Нет сохранённых результатов.</p>";
+          document.getElementById('chartStats').innerHTML = "<p>Нет данных для диаграммы</p>";
           return;
         }
 
@@ -109,8 +95,8 @@
         
         list.innerHTML = html;
         
-        // Обновляем диаграмму
-        updateChart(levelCounts, totalResults);
+        // Строим CSS диаграмму
+        createCSSChart(levelCounts, totalResults);
         
       })
       .catch(err => {
@@ -118,47 +104,95 @@
         document.getElementById('list').innerHTML = "<p>Ошибка при загрузке данных.</p>";
       });
 
-    // Функция обновления диаграммы
-    function updateChart(levelCounts, total) {
-      const counts = [
-        levelCounts["Новичок"] || 0,
-        levelCounts["Опытный менеджер"] || 0,
-        levelCounts["Профессионал высокого уровня"] || 0
+    // Функция создания CSS круговой диаграммы
+    function createCSSChart(levelCounts, total) {
+      const pieContainer = document.getElementById('chartPie');
+      const legendContainer = document.getElementById('chartLegend');
+      const statsElement = document.getElementById('chartStats');
+      
+      const labels = Object.keys(levelCounts);
+      const data = Object.values(levelCounts);
+      const percentages = data.map(count => total > 0 ? ((count / total) * 100).toFixed(1) : 0);
+      
+      // Цвета для диаграммы в стиле программиста
+      const colors = [
+        'rgba(255, 99, 132, 0.8)',    // Красный для новичков
+        'rgba(54, 162, 235, 0.8)',    // Синий для опытных
+        'rgba(0, 255, 0, 0.8)'        // Зелёный для профессионалов
       ];
       
-      // Обновляем общее количество
-      document.getElementById('totalCount').textContent = total;
+      // Очищаем контейнеры
+      pieContainer.innerHTML = '';
+      legendContainer.innerHTML = '';
       
-      // Если нет данных
       if (total === 0) {
+        pieContainer.innerHTML = '<div class="no-data">Нет данных для диаграммы</div>';
+        statsElement.innerHTML = '<p>Нет результатов для отображения</p>';
         return;
       }
       
-      // Рассчитываем проценты
-      const percents = counts.map(count => (count / total) * 100);
+      let cumulativePercentage = 0;
+      let pieHTML = '';
+      let legendHTML = '';
       
-      // Обновляем легенду
-      document.getElementById('count1').textContent = counts[0];
-      document.getElementById('percent1').textContent = percents[0].toFixed(1) + '%';
+      // Создаем сегменты диаграммы
+      data.forEach((count, index) => {
+        const percentage = parseFloat(percentages[index]);
+        
+        if (percentage > 0) {
+          const rotate = cumulativePercentage * 3.6; // 1% = 3.6 градуса
+          const color = colors[index];
+          
+          pieHTML += `
+            <div class="chart-segment" 
+                 style="--percentage: ${percentage}; 
+                        --rotate: ${rotate}deg; 
+                        --color: ${color}; 
+                        --index: ${index}">
+            </div>
+          `;
+          
+          cumulativePercentage += percentage;
+          
+          // Добавляем элемент в легенду
+          legendHTML += `
+            <div class="legend-item">
+              <span class="legend-color" style="background-color: ${color}"></span>
+              <span class="legend-label">${labels[index]}:</span>
+              <span class="legend-value">${count} (${percentage}%)</span>
+            </div>
+          `;
+        }
+      });
       
-      document.getElementById('count2').textContent = counts[1];
-      document.getElementById('percent2').textContent = percents[1].toFixed(1) + '%';
+      pieContainer.innerHTML = pieHTML;
+      legendContainer.innerHTML = legendHTML;
       
-      document.getElementById('count3').textContent = counts[2];
-      document.getElementById('percent3').textContent = percents[2].toFixed(1) + '%';
+      // Показываем статистику
+      let statsHTML = '<div class="stats-grid">';
       
-      // Создаём круговую диаграмму через CSS gradient
-      const pieChart = document.getElementById('pieChart');
-      const percent1 = percents[0];
-      const percent2 = percents[1];
-      const percent3 = percents[2];
+      labels.forEach((label, i) => {
+        const count = data[i];
+        const percent = percentages[i];
+        const color = colors[i];
+        
+        statsHTML += `
+          <div class="stat-item">
+            <span class="stat-color" style="background-color: ${color}"></span>
+            <span class="stat-label">${label}:</span>
+            <span class="stat-value">${count} (${percent}%)</span>
+          </div>
+        `;
+      });
       
-      // Устанавливаем градиент для круговой диаграммы
-      pieChart.style.background = `conic-gradient(
-        #ff6384 0% ${percent1}%,
-        #36a2eb ${percent1}% ${percent1 + percent2}%,
-        #00ff00 ${percent1 + percent2}% 100%
-      )`;
+      statsHTML += `
+        <div class="stat-total">
+          <span class="stat-label">Всего результатов:</span>
+          <span class="stat-value">${total}</span>
+        </div>
+      </div>`;
+      
+      statsElement.innerHTML = statsHTML;
     }
   </script>
 </body>
