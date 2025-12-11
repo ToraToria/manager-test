@@ -2,128 +2,138 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#4a6fa5">
   <title>Тест для менеджеров</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=1.5">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <h1>Автоматизированная оценка профессионализма менеджеа</h1>
-    <p id="userGreeting">Загрузка...</p>
+    <header class="header">
+      <h1>Автоматизированная оценка профессионализма менеджера</h1>
+      <p id="userGreeting" class="greeting">Загрузка...</p>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+        <span class="progress-text" id="progressText">Вопрос 1 из 15</span>
+      </div>
+    </header>
 
     <form id="testForm">
-      <div class="question" data-index="0">
+      <div class="question active" data-index="0">
         <p>1. Как вы обычно распределяете задачи в команде?</p>
-        <label><input type="radio" name="q1" value="1" required> Даю общее задание и жду результат</label><br>
-        <label><input type="radio" name="q1" value="2"> Назначаю задачи в зависимости от опыта сотрудников</label><br>
+        <label><input type="radio" name="q1" value="1" required> Даю общее задание и жду результат</label>
+        <label><input type="radio" name="q1" value="2"> Назначаю задачи в зависимости от опыта сотрудников</label>
         <label><input type="radio" name="q1" value="3"> Обсуждаю задачи с командой и согласовываю ответственность</label>
       </div>
 
-      <div class="question" data-index="1">
+      <div class="question hidden" data-index="1">
         <p>2. Как вы реагируете на срыв сроков проекта?</p>
-        <label><input type="radio" name="q2" value="1"> Обвиняю исполнителей</label><br>
-        <label><input type="radio" name="q2" value="2"> Ищу причины и пытаюсь ускорить работу</label><br>
+        <label><input type="radio" name="q2" value="1"> Обвиняю исполнителей</label>
+        <label><input type="radio" name="q2" value="2"> Ищу причины и пытаюсь ускорить работу</label>
         <label><input type="radio" name="q2" value="3"> Анализирую риски, корректирую план и согласовываю новые сроки</label>
       </div>
 
-      <div class="question" data-index="2">
+      <div class="question hidden" data-index="2">
         <p>3. Что вы делаете, если сотрудник постоянно нарушает дедлайны?</p>
-        <label><input type="radio" name="q3" value="1"> Игнорирую — авось перестанет</label><br>
-        <label><input type="radio" name="q3" value="2"> Делаю выговор или снижаю премию</label><br>
+        <label><input type="radio" name="q3" value="1"> Игнорирую — авось перестанет</label>
+        <label><input type="radio" name="q3" value="2"> Делаю выговор или снижаю премию</label>
         <label><input type="radio" name="q3" value="3"> Провожу личную беседу, выясняю причины и помогаю улучшить процесс</label>
       </div>
 
-      <div class="question" data-index="3">
+      <div class="question hidden" data-index="3">
         <p>4. Как вы мотивируете команду?</p>
-        <label><input type="radio" name="q4" value="1"> Говорю: «Работайте — получите зарплату»</label><br>
-        <label><input type="radio" name="q4" value="2"> Хвалю за хорошие результаты</label><br>
+        <label><input type="radio" name="q4" value="1"> Говорю: «Работайте — получите зарплату»</label>
+        <label><input type="radio" name="q4" value="2"> Хвалю за хорошие результаты</label>
         <label><input type="radio" name="q4" value="3"> Использую индивидуальный подход: кому-то — признание, кому-то — развитие, кому-то — автономия</label>
       </div>
 
-      <div class="question" data-index="4">
+      <div class="question hidden" data-index="4">
         <p>5. Как вы строите коммуникацию в команде?</p>
-        <label><input type="radio" name="q5" value="1"> Общение только по необходимости</label><br>
-        <label><input type="radio" name="q5" value="2"> Есть регулярные встречи раз в неделю</label><br>
+        <label><input type="radio" name="q5" value="1"> Общение только по необходимости</label>
+        <label><input type="radio" name="q5" value="2"> Есть регулярные встречи раз в неделю</label>
         <label><input type="radio" name="q5" value="3"> Использую прозрачные каналы (чаты, доски задач), провожу ретроспективы и 1-на-1 встречи</label>
       </div>
 
-      <div class="question" data-index="5">
+      <div class="question hidden" data-index="5">
         <p>6. Как вы принимаете ключевые решения?</p>
-        <label><input type="radio" name="q6" value="1"> Принимаю самостоятельно, быстро</label><br>
-        <label><input type="radio" name="q6" value="2"> Спрашиваю мнение у пары коллег</label><br>
+        <label><input type="radio" name="q6" value="1"> Принимаю самостоятельно, быстро</label>
+        <label><input type="radio" name="q6" value="2"> Спрашиваю мнение у пары коллег</label>
         <label><input type="radio" name="q6" value="3"> Собираю данные, вовлекаю заинтересованных лиц, взвешиваю риски</label>
       </div>
 
-      <div class="question" data-index="6">
+      <div class="question hidden" data-index="6">
         <p>7. Что для вас главное в управлении проектом?</p>
-        <label><input type="radio" name="q7" value="1"> Чтобы всё было сделано в срок</label><br>
-        <label><input type="radio" name="q7" value="2"> Чтобы не было конфликтов в команде</label><br>
+        <label><input type="radio" name="q7" value="1"> Чтобы всё было сделано в срок</label>
+        <label><input type="radio" name="q7" value="2"> Чтобы не было конфликтов в команде</label>
         <label><input type="radio" name="q7" value="3"> Баланс между сроками, качеством, ресурсами и удовлетворённостью команды</label>
       </div>
 
-      <div class="question" data-index="7">
+      <div class="question hidden" data-index="7">
         <p>8. Как вы оцениваете эффективность сотрудника?</p>
-        <label><input type="radio" name="q8" value="1"> По тому, сколько задач закрыл</label><br>
-        <label><input type="radio" name="q8" value="2"> По отзывам коллег и KPI</label><br>
+        <label><input type="radio" name="q8" value="1"> По тому, сколько задач закрыл</label>
+        <label><input type="radio" name="q8" value="2"> По отзывам коллег и KPI</label>
         <label><input type="radio" name="q8" value="3"> По достижению целей, развитию навыков и вкладу в команду</label>
       </div>
 
-      <div class="question" data-index="8">
+      <div class="question hidden" data-index="8">
         <p>9. Что вы делаете при появлении конфликта в команде?</p>
-        <label><input type="radio" name="q9" value="1"> Жду, пока разберутся сами</label><br>
-        <label><input type="radio" name="q9" value="2"> Сажаю конфликтующих за стол переговоров</label><br>
+        <label><input type="radio" name="q9" value="1"> Жду, пока разберутся сами</label>
+        <label><input type="radio" name="q9" value="2"> Сажаю конфликтующих за стол переговоров</label>
         <label><input type="radio" name="q9" value="3"> Выясняю корневые причины, помогаю наладить коммуникацию и выстроить правила взаимодействия</label>
       </div>
 
-      <div class="question" data-index="9">
+      <div class="question hidden" data-index="9">
         <p>10. Как вы относитесь к ошибкам сотрудников?</p>
-        <label><input type="radio" name="q10" value="1"> Наказываю — чтобы не повторяли</label><br>
-        <label><input type="radio" name="q10" value="2"> Исправляю и прошу быть внимательнее</label><br>
+        <label><input type="radio" name="q10" value="1"> Наказываю — чтобы не повторяли</label>
+        <label><input type="radio" name="q10" value="2"> Исправляю и прошу быть внимательнее</label>
         <label><input type="radio" name="q10" value="3"> Анализируем ошибку как возможность для обучения всей команды</label>
       </div>
 
-      <div class="question" data-index="10">
+      <div class="question hidden" data-index="10">
         <p>11. Как вы планируете рабочее время команды?</p>
-        <label><input type="radio" name="q11" value="1"> Пусть сами распределяют</label><br>
-        <label><input type="radio" name="q11" value="2"> Ставлю дедлайны и слежу за графиком</label><br>
+        <label><input type="radio" name="q11" value="1"> Пусть сами распределяют</label>
+        <label><input type="radio" name="q11" value="2"> Ставлю дедлайны и слежу за графиком</label>
         <label><input type="radio" name="q11" value="3"> Использую методы вроде Agile/Scrum: спринты, планирование, оценка задач</label>
       </div>
 
-      <div class="question" data-index="11">
+      <div class="question hidden" data-index="11">
         <p>12. Что вы делаете для развития команды?</p>
-        <label><input type="radio" name="q12" value="1"> Ничего — каждый сам за себя</label><br>
-        <label><input type="radio" name="q12" value="2"> Иногда отправляю на курсы</label><br>
+        <label><input type="radio" name="q12" value="1"> Ничего — каждый сам за себя</label>
+        <label><input type="radio" name="q12" value="2"> Иногда отправляю на курсы</label>
         <label><input type="radio" name="q12" value="3"> Регулярно обсуждаю цели развития, создаю план роста для каждого</label>
       </div>
 
-      <div class="question" data-index="12">
+      <div class="question hidden" data-index="12">
         <p>13. Как вы реагируете на изменения в задачах от руководства?</p>
-        <label><input type="radio" name="q13" value="1"> Передаю команде без обсуждения</label><br>
-        <label><input type="radio" name="q13" value="2"> Объясняю, что изменилось</label><br>
+        <label><input type="radio" name="q13" value="1"> Передаю команде без обсуждения</label>
+        <label><input type="radio" name="q13" value="2"> Объясняю, что изменилось</label>
         <label><input type="radio" name="q13" value="3"> Анализирую влияние изменений, обсуждаю с командой и адаптирую план</label>
       </div>
 
-      <div class="question" data-index="13">
+      <div class="question hidden" data-index="13">
         <p>14. Как вы обеспечиваете выполнение задач?</p>
-        <label><input type="radio" name="q14" value="1"> Контролирую лично каждый день</label><br>
-        <label><input type="radio" name="q14" value="2"> Спрашиваю раз в несколько дней</label><br>
+        <label><input type="radio" name="q14" value="1"> Контролирую лично каждый день</label>
+        <label><input type="radio" name="q14" value="2"> Спрашиваю раз в несколько дней</label>
         <label><input type="radio" name="q14" value="3"> Использую прозрачные инструменты (Trello, Jira), доверяю, но проверяю ключевые точки</label>
       </div>
 
-      <div class="question" data-index="14">
+      <div class="question hidden" data-index="14">
         <p>15. Ваша главная роль как менеджера?</p>
-        <label><input type="radio" name="q15" value="1"> Контролировать и докладывать наверх</label><br>
-        <label><input type="radio" name="q15" value="2"> Обеспечивать выполнение целей</label><br>
+        <label><input type="radio" name="q15" value="1"> Контролировать и докладывать наверх</label>
+        <label><input type="radio" name="q15" value="2"> Обеспечивать выполнение целей</label>
         <label><input type="radio" name="q15" value="3"> Развивать команду, устранять препятствия и создавать условия для успеха</label>
       </div>
 
-      <button type="submit">Отправить результат</button>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" id="prevBtn" disabled>Назад</button>
+        <button type="submit" class="btn-primary" id="submitBtn">Отправить результат</button>
+      </div>
     </form>
-    <div id="result" style="display:none;"></div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -140,8 +150,21 @@
     };
     
     firebase.initializeApp(firebaseConfig);
+    
+    // Регистрация Service Worker для PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/manager-test/sw.js')
+          .then(registration => {
+            console.log('Service Worker зарегистрирован:', registration);
+          })
+          .catch(error => {
+            console.log('Ошибка регистрации Service Worker:', error);
+          });
+      });
+    }
   </script>
   
-  <script src="main.js?v=1.5"></script>
+  <script src="main.js"></script>
 </body>
 </html>
