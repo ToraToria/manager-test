@@ -1,4 +1,4 @@
-
+/* styles.css - ТЁМНАЯ ТЕМА */
 :root {
   --primary: #2c3e50;
   --primary-dark: #1a252f;
@@ -762,4 +762,3 @@ input[type="radio"]:checked {
 .container > *:nth-child(3) {
   animation-delay: 0.2s;
 }
-
