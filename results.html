@@ -2,29 +2,57 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#4a6fa5">
   <title>Результаты тестов</title>
-  <link rel="stylesheet" href="styles.css?v=1.5">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <h2>Результаты прохождения теста</h2>
-    
-    <!-- Простая статистика -->
-    <div class="simple-stats">
-      <h3>Статистика тестирования</h3>
-      <div id="statsInfo">Загрузка статистики...</div>
+    <header class="header">
+      <h1>Результаты тестирования</h1>
+      <p class="subtitle">Анализ ваших управленческих компетенций</p>
+    </header>
+
+    <!-- Ваш последний результат -->
+    <div class="last-result-card">
+      <h3>Ваш последний результат</h3>
+      <div class="result-score" id="lastResult">
+        <div class="score-circle">
+          <span id="lastScore">0</span>
+          <small>баллов</small>
+        </div>
+        <div class="result-details">
+          <h4 id="lastLevel">Новичок</h4>
+          <p>Максимальный балл: 45</p>
+        </div>
+      </div>
     </div>
-    
-    <!-- Список результатов -->
-    <h3>История прохождений</h3>
-    <div id="resultsList">Загрузка...</div>
-    
-    <button onclick="window.location.href='index.html'" style="margin-top: 30px;">Вернуться к началу</button>
-    <button onclick="window.location.href='test.html'" style="margin-top: 10px; background: rgba(0, 100, 255, 0.1);">Пройти тест еще раз</button>
+
+    <!-- Общая статистика -->
+    <div class="stats-section">
+      <h3>Статистика тестирования</h3>
+      <div id="statsInfo" class="stats-loading">Загрузка статистики...</div>
+    </div>
+
+    <!-- История результатов -->
+    <div class="history-section">
+      <div class="section-header">
+        <h3>История прохождений</h3>
+        <span class="results-count" id="resultsCount">0 результатов</span>
+      </div>
+      <div id="resultsList" class="results-list">Загрузка...</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="window.location.href='test.html'">Пройти тест еще раз</button>
+      <button class="btn-secondary" onclick="window.location.href='index.html'">Вернуться к началу</button>
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -43,22 +71,39 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Загружаем результаты
+    // Показываем последний результат из localStorage
+    document.getElementById('lastScore').textContent = localStorage.getItem('lastScore') || '0';
+    document.getElementById('lastLevel').textContent = localStorage.getItem('lastLevel') || 'Нет данных';
+
+    // Загружаем статистику
     db.collection("results")
       .orderBy("timestamp", "desc")
       .get()
       .then(snapshot => {
         const list = document.getElementById('resultsList');
         const stats = document.getElementById('statsInfo');
+        const resultsCount = document.getElementById('resultsCount');
         
         if (snapshot.empty) {
-          list.innerHTML = "<p class='no-results'>Нет сохранённых результатов. Будьте первым!</p>";
-          stats.innerHTML = "<p>Пока нет статистики. Пройдите тест первым!</p>";
+          list.innerHTML = `
+            <div class="empty-state">
+              <p>Нет сохранённых результатов</p>
+              <button onclick="window.location.href='test.html'" class="btn-primary">Пройти тест первым</button>
+            </div>
+          `;
+          stats.innerHTML = `
+            <div class="stats-empty">
+              <p>Пока нет статистики</p>
+              <p>Пройдите тест, чтобы увидеть статистику</p>
+            </div>
+          `;
+          resultsCount.textContent = "0 результатов";
           return;
         }
 
         let html = '';
         let totalResults = snapshot.size;
+        resultsCount.textContent = `${totalResults} результатов`;
         
         // Счетчики для уровней
         let levelCounts = {
@@ -69,6 +114,7 @@
         
         // Средний балл
         let totalScore = 0;
+        let yourResults = 0;
 
         // Считаем результаты
         snapshot.forEach(doc => {
@@ -77,8 +123,20 @@
             ? `${data.firstName} ${data.lastName}`
             : "Аноним";
           const date = data.timestamp 
-            ? new Date(data.timestamp.toDate()).toLocaleDateString('ru-RU')
+            ? new Date(data.timestamp.toDate()).toLocaleDateString('ru-RU', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
             : 'Неизвестно';
+
+          // Проверяем, ваш ли это результат
+          const isYou = data.firstName === localStorage.getItem('firstName') && 
+                       data.lastName === localStorage.getItem('lastName');
+          
+          if (isYou) yourResults++;
 
           // Увеличиваем счётчик для уровня
           if (data.level && levelCounts.hasOwnProperty(data.level)) {
@@ -91,14 +149,28 @@
           }
 
           // Определяем цвет уровня
-          let levelColor = '#ff6384'; // Красный для новичка
-          if (data.level === "Опытный менеджер") levelColor = '#36a2eb'; // Синий
-          if (data.level === "Профессионал высокого уровня") levelColor = '#00ff00'; // Зеленый
+          let levelColor = '#ff6b6b'; // Красный для новичка
+          let levelClass = 'level-novice';
+          if (data.level === "Опытный менеджер") {
+            levelColor = '#4d96ff';
+            levelClass = 'level-experienced';
+          }
+          if (data.level === "Профессионал высокого уровня") {
+            levelColor = '#6bcf7f';
+            levelClass = 'level-professional';
+          }
 
           html += `
-            <div class="result-item" style="border-left: 4px solid ${levelColor}">
-              <p><strong>${name}</strong> — <span style="color: ${levelColor}">${data.level}</span> (баллы: ${data.score})</p>
-              <p><small>📅 ${date}</small></p>
+            <div class="result-item ${isYou ? 'your-result' : ''}">
+              <div class="result-header">
+                <span class="user-name">${name}</span>
+                ${isYou ? '<span class="you-badge">Вы</span>' : ''}
+                <span class="result-date">${date}</span>
+              </div>
+              <div class="result-body">
+                <span class="level-badge ${levelClass}">${data.level}</span>
+                <span class="score">${data.score} баллов</span>
+              </div>
             </div>
           `;
         });
@@ -107,44 +179,87 @@
         
         // Показываем статистику
         const averageScore = totalResults > 0 ? (totalScore / totalResults).toFixed(1) : 0;
+        const yourPercentage = totalResults > 0 ? ((yourResults / totalResults) * 100).toFixed(1) : 0;
         
-        let statsHTML = `
-          <div class="stats-summary">
-            <div class="stat-box">
-              <div class="stat-number">${totalResults}</div>
+        stats.innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">${totalResults}</div>
               <div class="stat-label">Всего тестов</div>
             </div>
-            <div class="stat-box">
-              <div class="stat-number">${averageScore}</div>
+            <div class="stat-card">
+              <div class="stat-value">${averageScore}</div>
               <div class="stat-label">Средний балл</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${yourResults}</div>
+              <div class="stat-label">Ваших тестов</div>
             </div>
           </div>
           
-          <div class="levels-breakdown">
+          <div class="levels-distribution">
             <h4>Распределение по уровням:</h4>
-            <div class="level-item">
-              <span class="level-dot" style="background: #ff6384"></span>
-              <span>Новичок: ${levelCounts["Новичок"]} (${((levelCounts["Новичок"] / totalResults) * 100).toFixed(1)}%)</span>
+            <div class="level-dist-item">
+              <div class="level-info">
+                <span class="level-dot" style="background: #ff6b6b"></span>
+                <span>Новичок</span>
+              </div>
+              <div class="level-stats">
+                <span>${levelCounts["Новичок"]} чел.</span>
+                <span>${((levelCounts["Новичок"] / totalResults) * 100).toFixed(1)}%</span>
+              </div>
             </div>
-            <div class="level-item">
-              <span class="level-dot" style="background: #36a2eb"></span>
-              <span>Опытный менеджер: ${levelCounts["Опытный менеджер"]} (${((levelCounts["Опытный менеджер"] / totalResults) * 100).toFixed(1)}%)</span>
+            <div class="level-dist-item">
+              <div class="level-info">
+                <span class="level-dot" style="background: #4d96ff"></span>
+                <span>Опытный менеджер</span>
+              </div>
+              <div class="level-stats">
+                <span>${levelCounts["Опытный менеджер"]} чел.</span>
+                <span>${((levelCounts["Опытный менеджер"] / totalResults) * 100).toFixed(1)}%</span>
+              </div>
             </div>
-            <div class="level-item">
-              <span class="level-dot" style="background: #00ff00"></span>
-              <span>Профессионал: ${levelCounts["Профессионал высокого уровня"]} (${((levelCounts["Профессионал высокого уровня"] / totalResults) * 100).toFixed(1)}%)</span>
+            <div class="level-dist-item">
+              <div class="level-info">
+                <span class="level-dot" style="background: #6bcf7f"></span>
+                <span>Профессионал</span>
+              </div>
+              <div class="level-stats">
+                <span>${levelCounts["Профессионал высокого уровня"]} чел.</span>
+                <span>${((levelCounts["Профессионал высокого уровня"] / totalResults) * 100).toFixed(1)}%</span>
+              </div>
             </div>
           </div>
         `;
         
-        stats.innerHTML = statsHTML;
-        
       })
       .catch(err => {
         console.error("Ошибка загрузки:", err);
-        document.getElementById('resultsList').innerHTML = "<p class='error'>Ошибка при загрузке данных. Проверьте подключение.</p>";
-        document.getElementById('statsInfo').innerHTML = "<p class='error'>Не удалось загрузить статистику</p>";
+        document.getElementById('resultsList').innerHTML = `
+          <div class="error-state">
+            <p>Ошибка при загрузке данных</p>
+            <p>Проверьте подключение к интернету</p>
+          </div>
+        `;
+        document.getElementById('statsInfo').innerHTML = `
+          <div class="error-state">
+            <p>Не удалось загрузить статистику</p>
+          </div>
+        `;
       });
+      
+    // Регистрация Service Worker для PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/manager-test/sw.js')
+          .then(registration => {
+            console.log('Service Worker зарегистрирован:', registration);
+          })
+          .catch(error => {
+            console.log('Ошибка регистрации Service Worker:', error);
+          });
+      });
+    }
   </script>
 </body>
 </html>
