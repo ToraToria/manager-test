@@ -12,55 +12,137 @@ if (firstName && lastName) {
   }
 }
 
-const questions = document.querySelectorAll('.question');
+// Инициализация навигации
+const questionsWrapper = document.getElementById('questionsWrapper');
+const questions = Array.from(document.querySelectorAll('.question'));
 const totalQuestions = questions.length;
 let currentQuestionIndex = 0;
 
 // Элементы навигации
 const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const submitBtn = document.getElementById('submitBtn');
 const progressFill = document.getElementById('progressFill');
 const progressText = document.getElementById('progressText');
+const questionsIndicator = document.getElementById('questionsIndicator');
 
+// Создаем индикаторы вопросов
+function createQuestionIndicators() {
+  questionsIndicator.innerHTML = '';
+  questions.forEach((_, index) => {
+    const dot = document.createElement('div');
+    dot.className = 'indicator-dot';
+    dot.dataset.index = index;
+    if (index === 0) dot.classList.add('active');
+    
+    dot.addEventListener('click', () => {
+      if (index !== currentQuestionIndex) {
+        goToQuestion(index);
+      }
+    });
+    
+    questionsIndicator.appendChild(dot);
+  });
+}
+
+// Обновление прогресса
 function updateProgress() {
   const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
   progressFill.style.width = `${progress}%`;
   progressText.textContent = `Вопрос ${currentQuestionIndex + 1} из ${totalQuestions}`;
+  
+  // Обновляем индикаторы
+  document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
+    dot.classList.remove('active', 'completed');
+    if (index === currentQuestionIndex) {
+      dot.classList.add('active');
+    } else if (index < currentQuestionIndex) {
+      dot.classList.add('completed');
+    }
+  });
 }
 
-function showQuestion(index) {
-  // Скрываем текущий вопрос с анимацией
-  const currentQuestion = questions[currentQuestionIndex];
-  if (currentQuestion) {
-    currentQuestion.classList.remove('active');
-    currentQuestion.classList.add('hidden');
-  }
+// Переход к вопросу
+function goToQuestion(index, direction = 'right') {
+  if (index < 0 || index >= totalQuestions) return;
   
-  // Показываем новый вопрос с задержкой для плавности
+  const currentQuestion = questions[currentQuestionIndex];
+  const nextQuestion = questions[index];
+  
+  // Определяем направление анимации
+  const isForward = index > currentQuestionIndex;
+  const leavingClass = isForward ? 'leaving-left' : 'leaving-right';
+  const enteringClass = isForward ? 'next' : 'prev';
+  
+  // Анимация ухода текущего вопроса
+  currentQuestion.classList.remove('active');
+  currentQuestion.classList.add(leavingClass);
+  
+  // Подготовка нового вопроса
+  nextQuestion.classList.remove('prev', 'next', 'leaving-left', 'leaving-right');
+  nextQuestion.classList.add(enteringClass);
+  
+  // Задержка для анимации
   setTimeout(() => {
-    const newQuestion = questions[index];
-    if (newQuestion) {
-      newQuestion.classList.remove('hidden');
-      setTimeout(() => {
-        newQuestion.classList.add('active');
-      }, 50);
-    }
-    
     currentQuestionIndex = index;
-    updateProgress();
     
-    // Прокручиваем к вопросу плавно
-    if (newQuestion) {
-      newQuestion.scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'center',
-        inline: 'nearest'
-      });
-    }
+    // Скрываем старый, показываем новый
+    currentQuestion.classList.remove(leavingClass);
+    nextQuestion.classList.remove(enteringClass);
+    nextQuestion.classList.add('active');
+    
+    // Обновляем UI
+    updateProgress();
+    updateNavButtons();
+    
+    // Плавный скролл к верху
+    window.scrollTo({
+      top: questionsWrapper.offsetTop - 100,
+      behavior: 'smooth'
+    });
   }, 300);
 }
 
+// Обновление кнопок навигации
+function updateNavButtons() {
+  prevBtn.disabled = currentQuestionIndex === 0;
+  
+  if (currentQuestionIndex === totalQuestions - 1) {
+    nextBtn.style.display = 'none';
+    submitBtn.style.display = 'block';
+  } else {
+    nextBtn.style.display = 'block';
+    submitBtn.style.display = 'none';
+  }
+}
+
+// Проверка, ответил ли на вопрос
+function isQuestionAnswered(index) {
+  const question = questions[index];
+  const inputs = question.querySelectorAll('input[type="radio"]');
+  return Array.from(inputs).some(input => input.checked);
+}
+
 // Инициализация
-showQuestion(currentQuestionIndex);
+function initQuestions() {
+  // Перемещаем все вопросы в wrapper
+  questions.forEach(question => {
+    questionsWrapper.appendChild(question);
+    question.style.position = 'absolute';
+  });
+  
+  // Показываем первый вопрос
+  questions[0].classList.add('active');
+  
+  // Скрываем остальные
+  for (let i = 1; i < questions.length; i++) {
+    questions[i].classList.add('next');
+  }
+  
+  createQuestionIndicators();
+  updateProgress();
+  updateNavButtons();
+}
 
 // Обработка выбора ответа
 questions.forEach((question, index) => {
@@ -77,34 +159,52 @@ questions.forEach((question, index) => {
         label.style.transform = '';
         label.style.background = '';
         label.style.borderColor = '';
-      }, 200);
+      }, 300);
       
-      // Автоматический переход к следующему вопросу с задержкой
+      // Автоматически переходим к следующему вопросу через 0.5 секунды
       setTimeout(() => {
         if (currentQuestionIndex < totalQuestions - 1) {
-          showQuestion(currentQuestionIndex + 1);
+          goToQuestion(currentQuestionIndex + 1, 'right');
         }
       }, 500);
     });
   });
 });
 
-// Кнопка "Назад"
-if (prevBtn) {
-  prevBtn.addEventListener('click', () => {
-    if (currentQuestionIndex > 0) {
-      showQuestion(currentQuestionIndex - 1);
+// Навигация по кнопкам
+prevBtn.addEventListener('click', () => {
+  if (currentQuestionIndex > 0) {
+    goToQuestion(currentQuestionIndex - 1, 'left');
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (currentQuestionIndex < totalQuestions - 1) {
+    if (isQuestionAnswered(currentQuestionIndex)) {
+      goToQuestion(currentQuestionIndex + 1, 'right');
+    } else {
+      // Анимация тряски для незаполненного вопроса
+      const currentQuestion = questions[currentQuestionIndex];
+      currentQuestion.style.animation = 'shake 0.5s ease';
+      setTimeout(() => {
+        currentQuestion.style.animation = '';
+      }, 500);
+      
+      alert('Пожалуйста, выберите ответ перед переходом к следующему вопросу.');
     }
-  });
-}
+  }
+});
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+  initQuestions();
+});
 
 // Отправка формы
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   
   const submitBtn = this.querySelector('#submitBtn');
-  if (!submitBtn) return;
-  
   const originalText = submitBtn.textContent;
   submitBtn.textContent = 'Отправка...';
   submitBtn.disabled = true;
@@ -126,14 +226,12 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
       if (!answer) {
         allAnswered = false;
         // Показываем, какой вопрос не отвечен
-        const questionIndex = i - 1;
-        const unansweredQuestion = questions[questionIndex];
-        if (unansweredQuestion) {
-          unansweredQuestion.style.animation = 'shake 0.5s ease';
-          setTimeout(() => {
-            unansweredQuestion.style.animation = '';
-          }, 500);
-        }
+        goToQuestion(i - 1);
+        const unansweredQuestion = questions[i - 1];
+        unansweredQuestion.style.animation = 'shake 0.5s ease';
+        setTimeout(() => {
+          unansweredQuestion.style.animation = '';
+        }, 500);
         break;
       }
       answers[`q${i}`] = answer;
@@ -168,7 +266,7 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
 
     console.log('Данные успешно отправлены! ID документа:', result.id);
     
-    // Сохраняем результат в localStorage для отображения на следующей странице
+    // Сохраняем результат
     localStorage.setItem('lastScore', score);
     localStorage.setItem('lastLevel', level);
     
@@ -193,7 +291,7 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
   }
 });
 
-// Добавляем анимацию тряски для незаполненных полей
+// Добавляем анимацию тряски
 const style = document.createElement('style');
 style.textContent = `
   @keyframes shake {
