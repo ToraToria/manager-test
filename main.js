@@ -10,8 +10,6 @@ if (firstName && lastName) {
   if (greetingElement) {
     greetingElement.innerText = `Добро пожаловать, ${firstName} ${lastName}!`;
   }
-} else {
-  window.location.href = 'index.html';
 }
 
 const questions = document.querySelectorAll('.question');
@@ -20,7 +18,6 @@ let currentQuestionIndex = 0;
 
 // Элементы навигации
 const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('submitBtn'); // временно как next
 const progressFill = document.getElementById('progressFill');
 const progressText = document.getElementById('progressText');
 
@@ -31,59 +28,92 @@ function updateProgress() {
 }
 
 function showQuestion(index) {
-  questions.forEach((q, i) => {
-    q.classList.remove('active');
-    q.classList.add('hidden');
-    if (i === index) {
+  // Скрываем текущий вопрос с анимацией
+  const currentQuestion = questions[currentQuestionIndex];
+  if (currentQuestion) {
+    currentQuestion.classList.remove('active');
+    currentQuestion.classList.add('hidden');
+  }
+  
+  // Показываем новый вопрос с задержкой для плавности
+  setTimeout(() => {
+    const newQuestion = questions[index];
+    if (newQuestion) {
+      newQuestion.classList.remove('hidden');
       setTimeout(() => {
-        q.classList.remove('hidden');
-        q.classList.add('active');
+        newQuestion.classList.add('active');
       }, 50);
     }
-  });
-  
-  // Обновляем кнопки навигации
-  prevBtn.disabled = index === 0;
-  
-  updateProgress();
+    
+    currentQuestionIndex = index;
+    updateProgress();
+    
+    // Прокручиваем к вопросу плавно
+    if (newQuestion) {
+      newQuestion.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center',
+        inline: 'nearest'
+      });
+    }
+  }, 300);
 }
 
 // Инициализация
 showQuestion(currentQuestionIndex);
-updateProgress();
 
 // Обработка выбора ответа
 questions.forEach((question, index) => {
   const inputs = question.querySelectorAll('input[type="radio"]');
   inputs.forEach(input => {
     input.addEventListener('change', () => {
-      // Автоматический переход к следующему вопросу
+      // Анимация выбора
+      const label = input.closest('label');
+      label.style.transform = 'translateX(10px)';
+      label.style.background = 'rgba(52, 152, 219, 0.1)';
+      label.style.borderColor = 'var(--accent)';
+      
+      setTimeout(() => {
+        label.style.transform = '';
+        label.style.background = '';
+        label.style.borderColor = '';
+      }, 200);
+      
+      // Автоматический переход к следующему вопросу с задержкой
       setTimeout(() => {
         if (currentQuestionIndex < totalQuestions - 1) {
-          currentQuestionIndex++;
-          showQuestion(currentQuestionIndex);
+          showQuestion(currentQuestionIndex + 1);
         }
-      }, 300);
+      }, 500);
     });
   });
 });
 
 // Кнопка "Назад"
-prevBtn.addEventListener('click', () => {
-  if (currentQuestionIndex > 0) {
-    currentQuestionIndex--;
-    showQuestion(currentQuestionIndex);
-  }
-});
+if (prevBtn) {
+  prevBtn.addEventListener('click', () => {
+    if (currentQuestionIndex > 0) {
+      showQuestion(currentQuestionIndex - 1);
+    }
+  });
+}
 
 // Отправка формы
 document.getElementById('testForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   
   const submitBtn = this.querySelector('#submitBtn');
+  if (!submitBtn) return;
+  
   const originalText = submitBtn.textContent;
   submitBtn.textContent = 'Отправка...';
   submitBtn.disabled = true;
+  
+  // Анимация кнопки
+  submitBtn.style.transform = 'scale(0.95)';
+  setTimeout(() => {
+    submitBtn.style.transform = '';
+  }, 300);
 
   try {
     const formData = new FormData(e.target);
@@ -95,6 +125,15 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
       const answer = formData.get(`q${i}`);
       if (!answer) {
         allAnswered = false;
+        // Показываем, какой вопрос не отвечен
+        const questionIndex = i - 1;
+        const unansweredQuestion = questions[questionIndex];
+        if (unansweredQuestion) {
+          unansweredQuestion.style.animation = 'shake 0.5s ease';
+          setTimeout(() => {
+            unansweredQuestion.style.animation = '';
+          }, 500);
+        }
         break;
       }
       answers[`q${i}`] = answer;
@@ -133,13 +172,34 @@ document.getElementById('testForm').addEventListener('submit', async function(e)
     localStorage.setItem('lastScore', score);
     localStorage.setItem('lastLevel', level);
     
-    window.location.href = 'results.html';
+    // Плавный переход к результатам
+    submitBtn.textContent = '✓ Успешно!';
+    submitBtn.style.background = 'var(--success)';
+    
+    setTimeout(() => {
+      window.location.href = 'results.html';
+    }, 1000);
     
   } catch (error) {
     console.error('Ошибка при отправке в Firebase:', error);
-    alert('Ошибка при отправке данных. Проверьте подключение к интернету.');
+    submitBtn.textContent = 'Ошибка!';
+    submitBtn.style.background = 'var(--danger)';
     
-    submitBtn.textContent = originalText;
-    submitBtn.disabled = false;
+    setTimeout(() => {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+      submitBtn.style.background = '';
+    }, 2000);
   }
 });
+
+// Добавляем анимацию тряски для незаполненных полей
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
+`;
+document.head.appendChild(style);
