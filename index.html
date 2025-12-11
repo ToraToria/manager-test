@@ -2,29 +2,64 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#4a6fa5">
   <title>Начать тест</title>
-  <link rel="stylesheet" href="styles.css?v=1.5">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <h1>Оценка профессионализма менеджера</h1>
-    <p>Пожалуйста, укажите ваши данные:</p>
-    <input type="text" id="firstName" placeholder="Имя" required>
-    <input type="text" id="lastName" placeholder="Фамилия" required>
-    <button onclick="startTest()">Начать тест</button>
+    <div class="welcome-card">
+      <div class="logo">
+        <h1>Оценка профессионализма менеджера</h1>
+      </div>
+      <div class="welcome-content">
+        <p class="intro-text">Этот тест поможет оценить ваш уровень управленческих компетенций и выявить области для развития.</p>
+        <p class="intro-text">Тест состоит из 15 вопросов. Выберите наиболее подходящий вариант ответа для каждой ситуации.</p>
+        
+        <div class="form-group">
+          <input type="text" id="firstName" placeholder="Имя" required>
+          <input type="text" id="lastName" placeholder="Фамилия" required>
+        </div>
+        
+        <button class="btn-primary" onclick="startTest()">Начать тест</button>
+        
+        <div class="instructions">
+          <h3>Инструкция:</h3>
+          <ul>
+            <li>Отвечайте честно, как вы поступили бы в реальной ситуации</li>
+            <li>Не задумывайтесь слишком долго над каждым вопросом</li>
+            <li>После завершения вы получите детальный анализ результатов</li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script src="user.js?v=1.2"></script>
+  <script src="user.js"></script>
   <script>
+    // Регистрация Service Worker для PWA
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/manager-test/sw.js')
-        .then(registration => console.log('SW registered'))
-        .catch(error => console.log('SW registration failed'));
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/manager-test/sw.js')
+          .then(registration => {
+            console.log('Service Worker зарегистрирован:', registration);
+          })
+          .catch(error => {
+            console.log('Ошибка регистрации Service Worker:', error);
+          });
+      });
     }
+    
+    // Проверка поддержки PWA
+    window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('Приложение может быть установлено как PWA');
+    });
   </script>
 </body>
 </html>
