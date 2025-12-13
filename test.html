@@ -12,8 +12,8 @@
   <link rel="icon" type="image/png" href="icon-192.png">
   
   <!-- Preload CSS для быстрой загрузки -->
-  <link rel="preload" href="styles.css?v=6" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="styles.css?v=6"></noscript>
+  <link rel="preload" href="styles.css?v=7" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles.css?v=7"></noscript>
   
   <style>
     /* Инлайн стили для немедленного отображения */
@@ -89,13 +89,42 @@
       color: var(--text-secondary);
       font-size: 1.1rem;
     }
+    
+    /* Preloader стили */
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #121212;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid #3498db;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
   <!-- Preloader -->
-  <div id="preloader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#121212;z-index:9999;display:flex;justify-content:center;align-items:center;">
+  <div id="preloader">
     <div style="text-align:center;">
-      <div style="width:50px;height:50px;border:3px solid #3498db;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
+      <div class="spinner"></div>
       <p style="color:#ecf0f1;">Загрузка теста...</p>
     </div>
   </div>
@@ -121,7 +150,6 @@
 
       <!-- Контейнер для вопросов -->
       <div class="questions-wrapper" id="questionsWrapper">
-        <!-- Вопросы здесь... (сохраните ваш HTML с вопросами как было) -->
         <!-- Вопрос 1 -->
         <div class="question" data-index="0">
           <p>1. Как вы обычно распределяете задачи в команде?</p>
@@ -257,10 +285,218 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   
   <script>
+    // Глобальные переменные для навигации
+    let currentQuestionIndex = 0;
+    let questions = [];
+    const totalQuestions = 15;
+
+    // Функции навигации (будут использоваться в main.js)
+    function goToQuestion(index) {
+      if (index < 0 || index >= totalQuestions) return;
+      
+      const currentQuestion = questions[currentQuestionIndex];
+      const nextQuestion = questions[index];
+      
+      if (!currentQuestion || !nextQuestion) return;
+      
+      // Определяем направление анимации
+      const isForward = index > currentQuestionIndex;
+      const leavingClass = isForward ? 'leaving-left' : 'leaving-right';
+      const enteringClass = isForward ? 'next' : 'prev';
+      
+      // Анимация ухода текущего вопроса
+      currentQuestion.classList.remove('active');
+      currentQuestion.classList.add(leavingClass);
+      
+      // Подготовка нового вопроса
+      nextQuestion.classList.remove('prev', 'next', 'leaving-left', 'leaving-right');
+      nextQuestion.classList.add(enteringClass);
+      
+      // Задержка для анимации
+      setTimeout(() => {
+        currentQuestionIndex = index;
+        
+        // Скрываем старый, показываем новый
+        currentQuestion.classList.remove(leavingClass);
+        nextQuestion.classList.remove(enteringClass);
+        nextQuestion.classList.add('active');
+        
+        // Обновляем UI
+        updateProgress();
+        updateNavButtons();
+        
+        // Плавный скролл к верху
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }, 300);
+    }
+    
+    function isQuestionAnswered(index) {
+      const question = questions[index];
+      if (!question) return false;
+      
+      const inputs = question.querySelectorAll('input[type="radio"]');
+      return Array.from(inputs).some(input => input.checked);
+    }
+    
+    function getCurrentQuestionIndex() {
+      return currentQuestionIndex;
+    }
+    
+    function updateProgress() {
+      const progressFill = document.getElementById('progressFill');
+      const progressText = document.getElementById('progressText');
+      const questionsIndicator = document.getElementById('questionsIndicator');
+      
+      if (!progressFill || !progressText) return;
+      
+      const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+      progressFill.style.width = `${progress}%`;
+      progressText.textContent = `Вопрос ${currentQuestionIndex + 1} из ${totalQuestions}`;
+      
+      // Обновляем индикаторы
+      if (questionsIndicator) {
+        document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
+          dot.classList.remove('active', 'completed');
+          if (index === currentQuestionIndex) {
+            dot.classList.add('active');
+          } else if (index < currentQuestionIndex) {
+            dot.classList.add('completed');
+          }
+        });
+      }
+    }
+    
+    function updateNavButtons() {
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      if (!prevBtn || !nextBtn || !submitBtn) return;
+      
+      prevBtn.disabled = currentQuestionIndex === 0;
+      
+      if (currentQuestionIndex === totalQuestions - 1) {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'block';
+      } else {
+        nextBtn.style.display = 'block';
+        submitBtn.style.display = 'none';
+      }
+    }
+    
+    // Инициализация навигации
+    function initNavigation() {
+      const questionsWrapper = document.getElementById('questionsWrapper');
+      questions = Array.from(document.querySelectorAll('.question'));
+      
+      if (!questionsWrapper || questions.length === 0) return;
+      
+      // Создаем индикаторы вопросов
+      const questionsIndicator = document.getElementById('questionsIndicator');
+      if (questionsIndicator) {
+        questionsIndicator.innerHTML = '';
+        for (let i = 0; i < totalQuestions; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'indicator-dot';
+          dot.dataset.index = i;
+          if (i === 0) dot.classList.add('active');
+          
+          dot.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            if (index !== currentQuestionIndex) {
+              goToQuestion(index);
+            }
+          });
+          
+          questionsIndicator.appendChild(dot);
+        }
+      }
+      
+      // Инициализация вопросов
+      questions.forEach(question => {
+        questionsWrapper.appendChild(question);
+        question.style.position = 'absolute';
+      });
+      
+      // Показываем первый вопрос
+      questions[0].classList.add('active');
+      
+      // Скрываем остальные
+      for (let i = 1; i < questions.length; i++) {
+        questions[i].classList.add('next');
+      }
+      
+      updateProgress();
+      updateNavButtons();
+      
+      // Обработка выбора ответа
+      questions.forEach((question, index) => {
+        const inputs = question.querySelectorAll('input[type="radio"]');
+        inputs.forEach(input => {
+          input.addEventListener('change', () => {
+            // Анимация выбора
+            const label = input.closest('label');
+            if (label) {
+              label.style.transform = 'translateX(10px)';
+              label.style.background = 'rgba(52, 152, 219, 0.1)';
+              label.style.borderColor = 'var(--accent)';
+              
+              setTimeout(() => {
+                label.style.transform = '';
+                label.style.background = '';
+                label.style.borderColor = '';
+              }, 300);
+            }
+            
+            // Автоматически переходим к следующему вопросу через 0.5 секунды
+            setTimeout(() => {
+              if (currentQuestionIndex < totalQuestions - 1) {
+                goToQuestion(currentQuestionIndex + 1);
+              }
+            }, 500);
+          });
+        });
+      });
+      
+      // Кнопки навигации
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (currentQuestionIndex > 0) {
+            goToQuestion(currentQuestionIndex - 1);
+          }
+        });
+      }
+      
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          if (currentQuestionIndex < totalQuestions - 1) {
+            if (isQuestionAnswered(currentQuestionIndex)) {
+              goToQuestion(currentQuestionIndex + 1);
+            } else {
+              // Анимация тряски для незаполненного вопроса
+              const currentQuestion = questions[currentQuestionIndex];
+              currentQuestion.style.animation = 'shake 0.5s ease';
+              setTimeout(() => {
+                currentQuestion.style.animation = '';
+              }, 500);
+              
+              alert('Пожалуйста, выберите ответ перед переходом к следующему вопросу.');
+            }
+          }
+        });
+      }
+    }
+
     // Firebase конфигурация
     const firebaseConfig = {
       apiKey: "AIzaSyAmTtXSLeksMmRuxlmt19qz60zESOCFGGY",
-      authDomain: "manager-test-2b964.firebaseapp.com",
+      authDomain: "manager-test-2b964.firebasestorage.app",
       projectId: "manager-test-2b964",
       storageBucket: "manager-test-2b964.firebasestorage.app",
       messagingSenderId: "769825814408",
@@ -268,7 +504,9 @@
     };
     
     // Инициализация Firebase
-    firebase.initializeApp(firebaseConfig);
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
     
     // Регистрация Service Worker для PWA
     if ('serviceWorker' in navigator) {
@@ -299,239 +537,11 @@
       }, 1000);
     }
     
-    // Ждем загрузки CSS
+    // Инициализация после загрузки
     window.addEventListener('load', function() {
-      setTimeout(function() {
-        document.getElementById('preloader').style.display = 'none';
-        document.querySelector('.container').style.display = 'block';
-      }, 500);
-    });
-    
-    // Fallback если CSS не загрузился
-    setTimeout(function() {
-      if (document.getElementById('preloader').style.display !== 'none') {
-        document.getElementById('preloader').style.display = 'none';
-        document.querySelector('.container').style.display = 'block';
-      }
-    }, 3000);
-  </script>
-  
-  <!-- Основной скрипт -->
-  <script src="main.js?v=3"></script>
-  
-  <!-- Скрипт для горизонтальной навигации -->
-  <script>
-    // Основной скрипт навигации
-    document.addEventListener('DOMContentLoaded', function() {
-      const questionsWrapper = document.getElementById('questionsWrapper');
-      const questions = Array.from(document.querySelectorAll('.question'));
-      const totalQuestions = questions.length;
-      let currentQuestionIndex = 0;
-
-      // Элементы навигации
-      const prevBtn = document.getElementById('prevBtn');
-      const nextBtn = document.getElementById('nextBtn');
-      const submitBtn = document.getElementById('submitBtn');
-      const progressFill = document.getElementById('progressFill');
-      const progressText = document.getElementById('progressText');
-      const questionsIndicator = document.getElementById('questionsIndicator');
-
-      // Создаем индикаторы вопросов
-      function createQuestionIndicators() {
-        if (!questionsIndicator) return;
-        
-        questionsIndicator.innerHTML = '';
-        for (let i = 0; i < totalQuestions; i++) {
-          const dot = document.createElement('div');
-          dot.className = 'indicator-dot';
-          dot.dataset.index = i;
-          if (i === 0) dot.classList.add('active');
-          
-          dot.addEventListener('click', function() {
-            const index = parseInt(this.dataset.index);
-            if (index !== currentQuestionIndex) {
-              goToQuestion(index);
-            }
-          });
-          
-          questionsIndicator.appendChild(dot);
-        }
-      }
-
-      // Обновление прогресса
-      function updateProgress() {
-        if (!progressFill || !progressText) return;
-        
-        const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
-        progressFill.style.width = `${progress}%`;
-        progressText.textContent = `Вопрос ${currentQuestionIndex + 1} из ${totalQuestions}`;
-        
-        // Обновляем индикаторы
-        if (questionsIndicator) {
-          document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
-            dot.classList.remove('active', 'completed');
-            if (index === currentQuestionIndex) {
-              dot.classList.add('active');
-            } else if (index < currentQuestionIndex) {
-              dot.classList.add('completed');
-            }
-          });
-        }
-      }
-
-      // Переход к вопросу
-      function goToQuestion(index) {
-        if (index < 0 || index >= totalQuestions) return;
-        
-        const currentQuestion = questions[currentQuestionIndex];
-        const nextQuestion = questions[index];
-        
-        // Определяем направление анимации
-        const isForward = index > currentQuestionIndex;
-        const leavingClass = isForward ? 'leaving-left' : 'leaving-right';
-        const enteringClass = isForward ? 'next' : 'prev';
-        
-        // Анимация ухода текущего вопроса
-        currentQuestion.classList.remove('active');
-        currentQuestion.classList.add(leavingClass);
-        
-        // Подготовка нового вопроса
-        nextQuestion.classList.remove('prev', 'next', 'leaving-left', 'leaving-right');
-        nextQuestion.classList.add(enteringClass);
-        
-        // Задержка для анимации
-        setTimeout(() => {
-          currentQuestionIndex = index;
-          
-          // Скрываем старый, показываем новый
-          currentQuestion.classList.remove(leavingClass);
-          nextQuestion.classList.remove(enteringClass);
-          nextQuestion.classList.add('active');
-          
-          // Обновляем UI
-          updateProgress();
-          updateNavButtons();
-          
-          // Плавный скролл к верху
-          window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-          });
-        }, 300);
-      }
-
-      // Обновление кнопок навигации
-      function updateNavButtons() {
-        if (!prevBtn || !nextBtn || !submitBtn) return;
-        
-        prevBtn.disabled = currentQuestionIndex === 0;
-        
-        if (currentQuestionIndex === totalQuestions - 1) {
-          nextBtn.style.display = 'none';
-          submitBtn.style.display = 'block';
-        } else {
-          nextBtn.style.display = 'block';
-          submitBtn.style.display = 'none';
-        }
-      }
-
-      // Проверка, ответил ли на вопрос
-      function isQuestionAnswered(index) {
-        const question = questions[index];
-        const inputs = question.querySelectorAll('input[type="radio"]');
-        return Array.from(inputs).some(input => input.checked);
-      }
-
-      // Инициализация вопросов
-      function initQuestions() {
-        if (!questionsWrapper || questions.length === 0) return;
-        
-        // Перемещаем все вопросы в wrapper
-        questions.forEach(question => {
-          questionsWrapper.appendChild(question);
-          question.style.position = 'absolute';
-        });
-        
-        // Показываем первый вопрос
-        questions[0].classList.add('active');
-        
-        // Скрываем остальные
-        for (let i = 1; i < questions.length; i++) {
-          questions[i].classList.add('next');
-        }
-        
-        createQuestionIndicators();
-        updateProgress();
-        updateNavButtons();
-      }
-
-      // Обработка выбора ответа
-      questions.forEach((question, index) => {
-        const inputs = question.querySelectorAll('input[type="radio"]');
-        inputs.forEach(input => {
-          input.addEventListener('change', () => {
-            // Анимация выбора
-            const label = input.closest('label');
-            if (label) {
-              label.style.transform = 'translateX(10px)';
-              label.style.background = 'rgba(52, 152, 219, 0.1)';
-              label.style.borderColor = 'var(--accent)';
-              
-              setTimeout(() => {
-                label.style.transform = '';
-                label.style.background = '';
-                label.style.borderColor = '';
-              }, 300);
-            }
-            
-            // Автоматически переходим к следующему вопросу через 0.5 секунды
-            setTimeout(() => {
-              if (currentQuestionIndex < totalQuestions - 1) {
-                goToQuestion(currentQuestionIndex + 1);
-              }
-            }, 500);
-          });
-        });
-      });
-
-      // Навигация по кнопкам
-      if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-          if (currentQuestionIndex > 0) {
-            goToQuestion(currentQuestionIndex - 1);
-          }
-        });
-      }
-
-      if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-          if (currentQuestionIndex < totalQuestions - 1) {
-            if (isQuestionAnswered(currentQuestionIndex)) {
-              goToQuestion(currentQuestionIndex + 1);
-            } else {
-              // Анимация тряски для незаполненного вопроса
-              const currentQuestion = questions[currentQuestionIndex];
-              currentQuestion.style.animation = 'shake 0.5s ease';
-              setTimeout(() => {
-                currentQuestion.style.animation = '';
-              }, 500);
-              
-              alert('Пожалуйста, выберите ответ перед переходом к следующему вопросу.');
-            }
-          }
-        });
-      }
-
-      // Инициализация при загрузке
-      setTimeout(initQuestions, 100);
-
       // Добавляем анимацию тряски
       const style = document.createElement('style');
       style.textContent = `
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
@@ -539,7 +549,31 @@
         }
       `;
       document.head.appendChild(style);
+      
+      // Инициализация навигации
+      setTimeout(function() {
+        initNavigation();
+        
+        // Скрываем прелоадер
+        document.getElementById('preloader').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+      }, 500);
     });
+    
+    // Fallback если CSS не загрузился
+    setTimeout(function() {
+      const preloader = document.getElementById('preloader');
+      const container = document.querySelector('.container');
+      
+      if (preloader && preloader.style.display !== 'none') {
+        preloader.style.display = 'none';
+        if (container) container.style.display = 'block';
+        initNavigation();
+      }
+    }, 3000);
   </script>
+  
+  <!-- Основной скрипт для отправки формы -->
+  <script src="main.js?v=5"></script>
 </body>
 </html>
