@@ -1,4 +1,4 @@
-/* styles.css - ТЁМНАЯ ТЕМА С ГОРИЗОНТАЛЬНЫМИ ПЕРЕХОДАМИ */
+/* styles.css v6 - ТЁМНАЯ ТЕМА С ГОРИЗОНТАЛЬНЫМИ ПЕРЕХОДАМИ */
 :root {
   --primary: #2c3e50;
   --primary-dark: #1a252f;
@@ -913,3 +913,4 @@ input[type="radio"]:checked {
     opacity: 0;
   }
 }
+
