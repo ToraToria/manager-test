@@ -10,10 +10,97 @@
   <title>Тест для менеджеров</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=5">
+  
+  <!-- Preload CSS для быстрой загрузки -->
+  <link rel="preload" href="styles.css?v=6" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="styles.css?v=6"></noscript>
+  
+  <style>
+    /* Инлайн стили для немедленного отображения */
+    :root {
+      --primary: #2c3e50;
+      --primary-dark: #1a252f;
+      --primary-light: #34495e;
+      --secondary: #7f8c8d;
+      --accent: #3498db;
+      --text-primary: #ecf0f1;
+      --text-secondary: #bdc3c7;
+      --text-light: #95a5a6;
+      --bg-primary: #121212;
+      --bg-secondary: #1e1e1e;
+      --bg-card: #2d2d2d;
+      --bg-input: #3a3a3a;
+      --border: #404040;
+      --border-light: #555;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.4);
+      --radius: 8px;
+      --radius-sm: 6px;
+      --success: #27ae60;
+      --warning: #f39c12;
+      --danger: #e74c3c;
+      --info: #3498db;
+      --btn-bg: #ecf0f1;
+      --btn-text: #2c3e50;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 20px;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      position: relative;
+    }
+    
+    /* Минимальные стили для загрузки */
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    h1 {
+      color: var(--text-primary);
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    
+    .greeting {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
+  <!-- Preloader -->
+  <div id="preloader" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#121212;z-index:9999;display:flex;justify-content:center;align-items:center;">
+    <div style="text-align:center;">
+      <div style="width:50px;height:50px;border:3px solid #3498db;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
+      <p style="color:#ecf0f1;">Загрузка теста...</p>
+    </div>
+  </div>
+
+  <div class="container" style="display:none;">
     <header class="header">
       <h1>Автоматизированная оценка профессионализма менеджера</h1>
       <p id="userGreeting" class="greeting">Загрузка...</p>
@@ -34,6 +121,7 @@
 
       <!-- Контейнер для вопросов -->
       <div class="questions-wrapper" id="questionsWrapper">
+        <!-- Вопросы здесь... (сохраните ваш HTML с вопросами как было) -->
         <!-- Вопрос 1 -->
         <div class="question" data-index="0">
           <p>1. Как вы обычно распределяете задачи в команде?</p>
@@ -185,7 +273,7 @@
     // Регистрация Service Worker для PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('./sw.js')
           .then(registration => {
             console.log('Service Worker зарегистрирован:', registration);
           })
@@ -194,10 +282,42 @@
           });
       });
     }
+    
+    // Проверка имени пользователя
+    const firstName = localStorage.getItem('firstName');
+    const lastName = localStorage.getItem('lastName');
+
+    if (firstName && lastName) {
+      const greetingElement = document.getElementById('userGreeting');
+      if (greetingElement) {
+        greetingElement.innerText = `Добро пожаловать, ${firstName} ${lastName}!`;
+      }
+    } else {
+      // Если нет имени, возвращаем на главную
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1000);
+    }
+    
+    // Ждем загрузки CSS
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        document.getElementById('preloader').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+      }, 500);
+    });
+    
+    // Fallback если CSS не загрузился
+    setTimeout(function() {
+      if (document.getElementById('preloader').style.display !== 'none') {
+        document.getElementById('preloader').style.display = 'none';
+        document.querySelector('.container').style.display = 'block';
+      }
+    }, 3000);
   </script>
   
   <!-- Основной скрипт -->
-  <script src="main.js?v=2"></script>
+  <script src="main.js?v=3"></script>
   
   <!-- Скрипт для горизонтальной навигации -->
   <script>
@@ -218,6 +338,8 @@
 
       // Создаем индикаторы вопросов
       function createQuestionIndicators() {
+        if (!questionsIndicator) return;
+        
         questionsIndicator.innerHTML = '';
         for (let i = 0; i < totalQuestions; i++) {
           const dot = document.createElement('div');
@@ -238,19 +360,23 @@
 
       // Обновление прогресса
       function updateProgress() {
+        if (!progressFill || !progressText) return;
+        
         const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
         progressFill.style.width = `${progress}%`;
         progressText.textContent = `Вопрос ${currentQuestionIndex + 1} из ${totalQuestions}`;
         
         // Обновляем индикаторы
-        document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
-          dot.classList.remove('active', 'completed');
-          if (index === currentQuestionIndex) {
-            dot.classList.add('active');
-          } else if (index < currentQuestionIndex) {
-            dot.classList.add('completed');
-          }
-        });
+        if (questionsIndicator) {
+          document.querySelectorAll('.indicator-dot').forEach((dot, index) => {
+            dot.classList.remove('active', 'completed');
+            if (index === currentQuestionIndex) {
+              dot.classList.add('active');
+            } else if (index < currentQuestionIndex) {
+              dot.classList.add('completed');
+            }
+          });
+        }
       }
 
       // Переход к вопросу
@@ -296,6 +422,8 @@
 
       // Обновление кнопок навигации
       function updateNavButtons() {
+        if (!prevBtn || !nextBtn || !submitBtn) return;
+        
         prevBtn.disabled = currentQuestionIndex === 0;
         
         if (currentQuestionIndex === totalQuestions - 1) {
@@ -316,6 +444,8 @@
 
       // Инициализация вопросов
       function initQuestions() {
+        if (!questionsWrapper || questions.length === 0) return;
+        
         // Перемещаем все вопросы в wrapper
         questions.forEach(question => {
           questionsWrapper.appendChild(question);
@@ -342,15 +472,17 @@
           input.addEventListener('change', () => {
             // Анимация выбора
             const label = input.closest('label');
-            label.style.transform = 'translateX(10px)';
-            label.style.background = 'rgba(52, 152, 219, 0.1)';
-            label.style.borderColor = 'var(--accent)';
-            
-            setTimeout(() => {
-              label.style.transform = '';
-              label.style.background = '';
-              label.style.borderColor = '';
-            }, 300);
+            if (label) {
+              label.style.transform = 'translateX(10px)';
+              label.style.background = 'rgba(52, 152, 219, 0.1)';
+              label.style.borderColor = 'var(--accent)';
+              
+              setTimeout(() => {
+                label.style.transform = '';
+                label.style.background = '';
+                label.style.borderColor = '';
+              }, 300);
+            }
             
             // Автоматически переходим к следующему вопросу через 0.5 секунды
             setTimeout(() => {
@@ -363,35 +495,43 @@
       });
 
       // Навигация по кнопкам
-      prevBtn.addEventListener('click', () => {
-        if (currentQuestionIndex > 0) {
-          goToQuestion(currentQuestionIndex - 1);
-        }
-      });
-
-      nextBtn.addEventListener('click', () => {
-        if (currentQuestionIndex < totalQuestions - 1) {
-          if (isQuestionAnswered(currentQuestionIndex)) {
-            goToQuestion(currentQuestionIndex + 1);
-          } else {
-            // Анимация тряски для незаполненного вопроса
-            const currentQuestion = questions[currentQuestionIndex];
-            currentQuestion.style.animation = 'shake 0.5s ease';
-            setTimeout(() => {
-              currentQuestion.style.animation = '';
-            }, 500);
-            
-            alert('Пожалуйста, выберите ответ перед переходом к следующему вопросу.');
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          if (currentQuestionIndex > 0) {
+            goToQuestion(currentQuestionIndex - 1);
           }
-        }
-      });
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          if (currentQuestionIndex < totalQuestions - 1) {
+            if (isQuestionAnswered(currentQuestionIndex)) {
+              goToQuestion(currentQuestionIndex + 1);
+            } else {
+              // Анимация тряски для незаполненного вопроса
+              const currentQuestion = questions[currentQuestionIndex];
+              currentQuestion.style.animation = 'shake 0.5s ease';
+              setTimeout(() => {
+                currentQuestion.style.animation = '';
+              }, 500);
+              
+              alert('Пожалуйста, выберите ответ перед переходом к следующему вопросу.');
+            }
+          }
+        });
+      }
 
       // Инициализация при загрузке
-      initQuestions();
+      setTimeout(initQuestions, 100);
 
       // Добавляем анимацию тряски
       const style = document.createElement('style');
       style.textContent = `
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
         @keyframes shake {
           0%, 100% { transform: translateX(0); }
           10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
@@ -400,22 +540,6 @@
       `;
       document.head.appendChild(style);
     });
-
-    // Проверка имени пользователя
-    const firstName = localStorage.getItem('firstName');
-    const lastName = localStorage.getItem('lastName');
-
-    if (firstName && lastName) {
-      const greetingElement = document.getElementById('userGreeting');
-      if (greetingElement) {
-        greetingElement.innerText = `Добро пожаловать, ${firstName} ${lastName}!`;
-      }
-    } else {
-      // Если нет имени, возвращаем на главную
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1000);
-    }
   </script>
 </body>
 </html>
