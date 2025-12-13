@@ -270,4 +270,42 @@ document.addEventListener('DOMContentLoaded', function() {
         errorMsg.className = 'error-message';
         errorMsg.innerHTML = `
           <div style="text-align: center; padding: 20px; background: rgba(231, 76, 60, 0.1); border-radius: 8px; margin: 20px 0;">
-            <p style="color: #e74c3c
+            <p style="color: #e74c3c; font-weight: bold; margin-bottom: 10px;">
+              ❌ Ошибка отправки
+            </p>
+            <p style="color: #bdc3c7; margin-bottom: 15px;">
+              ${error.message || 'Неизвестная ошибка. Проверьте подключение к интернету.'}
+            </p>
+            <button onclick="location.reload()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+              Попробовать снова
+            </button>
+          </div>
+        `;
+        
+        const form = document.getElementById('testForm');
+        if (form && !document.querySelector('.error-message')) {
+          form.parentNode.insertBefore(errorMsg, form);
+        }
+        
+        setTimeout(() => {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+          submitBtn.style.background = '';
+          submitBtn.style.color = '';
+          submitBtn.style.borderColor = '';
+          
+          // Удаляем сообщение об ошибке
+          if (errorMsg.parentNode) {
+            setTimeout(() => {
+              errorMsg.parentNode.removeChild(errorMsg);
+            }, 5000);
+          }
+        }, 3000);
+      }
+    });
+    
+    console.log('Обработчик формы добавлен успешно');
+  } else {
+    console.error('Форма testForm не найдена!');
+  }
+});
