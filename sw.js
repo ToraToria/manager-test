@@ -1,16 +1,16 @@
 // sw.js - Service Worker
-const CACHE_NAME = 'manager-test-v2.0';
+const CACHE_NAME = 'manager-test-v3.0';
 const urlsToCache = [
-  '/manager-test/',
-  '/manager-test/index.html',
-  '/manager-test/test.html',
-  '/manager-test/results.html',
-  '/manager-test/styles.css',
-  '/manager-test/main.js',
-  '/manager-test/user.js',
-  '/manager-test/manifest.json',
-  '/manager-test/icon-192.png',
-  '/manager-test/icon-512.png'
+  './',
+  './index.html',
+  './test.html',
+  './results.html',
+  './styles.css',
+  './main.js',
+  './user.js',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
@@ -35,28 +35,53 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      console.log('Service Worker активирован');
+      return self.clients.claim();
+    })
   );
 });
 
 self.addEventListener('fetch', event => {
+  // Пропускаем запросы к Firebase
+  if (event.request.url.includes('firebase') || 
+      event.request.url.includes('gstatic')) {
+    return fetch(event.request);
+  }
+  
   event.respondWith(
     caches.match(event.request)
       .then(response => {
+        // Возвращаем кешированную версию, если есть
         if (response) {
           return response;
         }
-        return fetch(event.request).then(response => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+        
+        // Иначе загружаем с сети
+        return fetch(event.request)
+          .then(response => {
+            // Проверяем валидный ответ
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+            
+            // Клонируем ответ
+            const responseToCache = response.clone();
+            
+            // Кешируем для будущего использования
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+            
             return response;
-          }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => {
-              cache.put(event.request, responseToCache);
-            });
-          return response;
-        });
+          })
+          .catch(() => {
+            // Если офлайн и нет в кеше, можно показать кастомную страницу
+            if (event.request.headers.get('accept').includes('text/html')) {
+              return caches.match('./index.html');
+            }
+          });
       })
   );
 });
